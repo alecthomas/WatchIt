@@ -7,24 +7,68 @@
 //
 
 import Foundation
+import SwiftyJSON
 
-public class Watch: EVObject {
-    var name: String = ""
-    var directory: String = ""
-    var glob: String = ""
-    var command: String = ""
-    var pattern: String = ""
+public protocol JSONSerializable {
+    init(json: JSON) throws
+    func toJSON() -> JSON
+}
 
-    var emptyPreset: Bool {
+public class Watch: JSONSerializable {
+    public var name: String = ""
+    public var directory: String = ""
+    public var glob: String = ""
+    public var command: String = ""
+    public var pattern: String = ""
+
+    public var emptyPreset: Bool {
         return glob == "" && command == "" && pattern == ""
+    }
+
+    public init() {}
+
+    public required init(json: JSON) throws {
+        self.name = json["name"].stringValue
+        self.directory = json["directory"].stringValue
+        self.glob = json["glob"].stringValue
+        self.command = json["command"].stringValue
+        self.pattern = json["pattern"].stringValue
+    }
+
+    public func toJSON() -> JSON {
+        return JSON([
+            "name": name,
+            "directory": directory,
+            "glob": glob,
+            "command": command,
+            "pattern": pattern
+            ])
     }
 }
 
-public class Preset: EVObject {
-    var name: String = ""
-    var glob: String = ""
-    var command: String = ""
-    var pattern: String = ""
+public class Preset: JSONSerializable {
+    public var name: String = ""
+    public var glob: String = ""
+    public var command: String = ""
+    public var pattern: String = ""
+
+    public init() {}
+
+    public required init(json: JSON) throws {
+        self.name = json["name"].stringValue
+        self.glob = json["glob"].stringValue
+        self.command = json["command"].stringValue
+        self.pattern = json["pattern"].stringValue
+    }
+
+    public func toJSON() -> JSON {
+        return JSON([
+            "name": name,
+            "glob": glob,
+            "command": command,
+            "pattern": pattern
+            ])
+    }
 }
 
 func ~= (preset: Preset, watch: Watch) -> Bool {
@@ -42,19 +86,34 @@ let modelDirectory =  (NSSearchPathForDirectoriesInDomains(.ApplicationSupportDi
 var modelPath = modelDirectory.stringByAppendingPathComponent("WatchIt.json")
 
 
-public class Model: EVObject {
-    var watches: [Watch] = []
-    var presets: [Preset] = []
+public class Model: JSONSerializable {
+    var watches: ObservableCollection<Watch> = []
+    var presets: ObservableCollection<Preset> = []
 
     func presetForWatch(watch: Watch) -> Preset? {
         return presets.filter({p in p ~= watch}).first
     }
 
+    public init() {
+    }
+
+    public required init(json: JSON) throws {
+        watches.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
+        presets.appendContentsOf(try json["watches"].arrayValue.map({v in try Preset(json: v)}))
+    }
+
+    public func toJSON() -> JSON {
+        return JSON([
+            "watches": JSON(watches.map({v in v.toJSON()})),
+            "presets": JSON(presets.map({v in v.toJSON()})),
+            ])
+    }
+
     static func deserialize() -> Model {
         log.info("deserializing model from \(modelPath)")
         do {
-            let content = try String(contentsOfFile: modelPath)
-            return Model(json: content)
+            guard let data = NSData(contentsOfFile: modelPath) else { return  Model() }
+            return try Model(json: JSON(data: data))
         } catch {
             return Model()
         }
@@ -62,7 +121,7 @@ public class Model: EVObject {
 
     func serialize() throws {
         log.info("serializing model to \(modelPath)")
-        let content = self.toJsonString()
-        try content.writeToFile(modelPath, atomically: true, encoding: NSUTF8StringEncoding)
+        let data = try self.toJSON().rawData()
+        data.writeToFile(modelPath, atomically: true)
     }
 }

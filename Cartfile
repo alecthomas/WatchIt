@@ -1,3 +1,4 @@
 github "alecthomas/FileSystemEvents" "master"
 github "duemunk/Async" "feature/Swift_2.0"
 github "DaveWoodCom/XCGLogger" "swift_2.0"
+github "SwiftyJSON/SwiftyJSON" "xcode7"

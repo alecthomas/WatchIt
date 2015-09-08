@@ -13,6 +13,10 @@
 		702AABF31B9E767000158C8D /* Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF01B9E767000158C8D /* Regex.swift */; settings = {ASSET_TAGS = (); }; };
 		702AABF41B9E767000158C8D /* pcrewrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF11B9E767000158C8D /* pcrewrapper.c */; settings = {ASSET_TAGS = (); }; };
 		702AABF61B9E767500158C8D /* Glob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF51B9E767500158C8D /* Glob.swift */; settings = {ASSET_TAGS = (); }; };
+		702AABF81B9E7C2000158C8D /* Observables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF71B9E7C2000158C8D /* Observables.swift */; settings = {ASSET_TAGS = (); }; };
+		702AABFA1B9E857400158C8D /* ObservablesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF91B9E857400158C8D /* ObservablesTest.swift */; settings = {ASSET_TAGS = (); }; };
+		702AABFE1B9E91C000158C8D /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */; };
+		702AABFF1B9E91C000158C8D /* SwiftyJSON.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		703E5E4A1B998B400026036C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703E5E491B998B400026036C /* AppDelegate.swift */; };
 		703E5E4C1B998B400026036C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 703E5E4B1B998B400026036C /* Assets.xcassets */; };
 		703E5E4F1B998B400026036C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 703E5E4D1B998B400026036C /* MainMenu.xib */; };
@@ -20,9 +24,6 @@
 		70C8C0B41B998CFD003D9B27 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0AC1B998CFD003D9B27 /* Model.swift */; settings = {ASSET_TAGS = (); }; };
 		70C8C0B61B998CFD003D9B27 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0AF1B998CFD003D9B27 /* PreferencesWindow.swift */; settings = {ASSET_TAGS = (); }; };
 		70C8C0B71B998CFD003D9B27 /* PreferencesWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70C8C0B01B998CFD003D9B27 /* PreferencesWindow.xib */; settings = {ASSET_TAGS = (); }; };
-		70C8C0BE1B998D1D003D9B27 /* EVObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0BB1B998D1D003D9B27 /* EVObject.swift */; settings = {ASSET_TAGS = (); }; };
-		70C8C0BF1B998D1D003D9B27 /* EVObjectDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0BC1B998D1D003D9B27 /* EVObjectDescription.swift */; settings = {ASSET_TAGS = (); }; };
-		70C8C0C01B998D1D003D9B27 /* EVReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0BD1B998D1D003D9B27 /* EVReflection.swift */; settings = {ASSET_TAGS = (); }; };
 		70C8C0C21B998DEA003D9B27 /* Async.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C11B998DEA003D9B27 /* Async.framework */; };
 		70C8C0C31B998DEA003D9B27 /* Async.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C11B998DEA003D9B27 /* Async.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		70C8C0C61B998DF0003D9B27 /* EonilFileSystemEvents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */; };
@@ -48,6 +49,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				702AABFF1B9E91C000158C8D /* SwiftyJSON.framework in Embed Frameworks */,
 				70C8C0C71B998DF0003D9B27 /* EonilFileSystemEvents.framework in Embed Frameworks */,
 				70C8C0C31B998DEA003D9B27 /* Async.framework in Embed Frameworks */,
 				70C8C0CA1B998DF5003D9B27 /* XCGLogger.framework in Embed Frameworks */,
@@ -65,6 +67,10 @@
 		702AABF11B9E767000158C8D /* pcrewrapper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcrewrapper.c; path = Regex/pcrewrapper.c; sourceTree = "<group>"; };
 		702AABF21B9E767000158C8D /* pcrewrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcrewrapper.h; path = Regex/pcrewrapper.h; sourceTree = "<group>"; };
 		702AABF51B9E767500158C8D /* Glob.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Glob.swift; sourceTree = "<group>"; };
+		702AABF71B9E7C2000158C8D /* Observables.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Observables.swift; sourceTree = "<group>"; };
+		702AABF91B9E857400158C8D /* ObservablesTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservablesTest.swift; sourceTree = "<group>"; };
+		702AABFB1B9E91B100158C8D /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/Mac/SwiftyJSON.framework; sourceTree = "<group>"; };
+		702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/Mac/SwiftyJSON.framework; sourceTree = "<group>"; };
 		703E5E461B998B400026036C /* WatchIt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WatchIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		703E5E491B998B400026036C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		703E5E4B1B998B400026036C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -78,9 +84,6 @@
 		70C8C0AF1B998CFD003D9B27 /* PreferencesWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		70C8C0B01B998CFD003D9B27 /* PreferencesWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PreferencesWindow.xib; sourceTree = "<group>"; };
 		70C8C0B21B998CFD003D9B27 /* WatchIt-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "WatchIt-Bridging-Header.h"; sourceTree = "<group>"; };
-		70C8C0BB1B998D1D003D9B27 /* EVObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVObject.swift; sourceTree = "<group>"; };
-		70C8C0BC1B998D1D003D9B27 /* EVObjectDescription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVObjectDescription.swift; sourceTree = "<group>"; };
-		70C8C0BD1B998D1D003D9B27 /* EVReflection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVReflection.swift; sourceTree = "<group>"; };
 		70C8C0C11B998DEA003D9B27 /* Async.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Async.framework; path = Carthage/Build/Mac/Async.framework; sourceTree = "<group>"; };
 		70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EonilFileSystemEvents.framework; path = Carthage/Build/Mac/EonilFileSystemEvents.framework; sourceTree = "<group>"; };
 		70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCGLogger.framework; path = Carthage/Build/Mac/XCGLogger.framework; sourceTree = "<group>"; };
@@ -91,6 +94,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				702AABFE1B9E91C000158C8D /* SwiftyJSON.framework in Frameworks */,
 				70C8C0C61B998DF0003D9B27 /* EonilFileSystemEvents.framework in Frameworks */,
 				70C8C0C21B998DEA003D9B27 /* Async.framework in Frameworks */,
 				70C8C0C91B998DF5003D9B27 /* XCGLogger.framework in Frameworks */,
@@ -120,6 +124,8 @@
 		703E5E3D1B998B400026036C = {
 			isa = PBXGroup;
 			children = (
+				702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */,
+				702AABFB1B9E91B100158C8D /* SwiftyJSON.framework */,
 				70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */,
 				70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */,
 				70C8C0C11B998DEA003D9B27 /* Async.framework */,
@@ -155,6 +161,7 @@
 				703E5E4D1B998B400026036C /* MainMenu.xib */,
 				703E5E501B998B400026036C /* Info.plist */,
 				70C8C0AA1B998CFC003D9B27 /* WatchIt-Bridging-Header.h */,
+				702AABF71B9E7C2000158C8D /* Observables.swift */,
 			);
 			path = WatchIt;
 			sourceTree = "<group>";
@@ -165,6 +172,7 @@
 				703E5E5B1B998B400026036C /* Info.plist */,
 				702AABE91B9D6FA200158C8D /* GlobTests.swift */,
 				702AABEB1B9D778B00158C8D /* RegexTests.swift */,
+				702AABF91B9E857400158C8D /* ObservablesTest.swift */,
 			);
 			path = WatchItTests;
 			sourceTree = "<group>";
@@ -172,19 +180,8 @@
 		70C8C0B91B998D1D003D9B27 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
-				70C8C0BA1B998D1D003D9B27 /* EVReflection */,
 			);
 			path = Vendor;
-			sourceTree = "<group>";
-		};
-		70C8C0BA1B998D1D003D9B27 /* EVReflection */ = {
-			isa = PBXGroup;
-			children = (
-				70C8C0BB1B998D1D003D9B27 /* EVObject.swift */,
-				70C8C0BC1B998D1D003D9B27 /* EVObjectDescription.swift */,
-				70C8C0BD1B998D1D003D9B27 /* EVReflection.swift */,
-			);
-			path = EVReflection;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -293,13 +290,11 @@
 				70C8C0B61B998CFD003D9B27 /* PreferencesWindow.swift in Sources */,
 				702AABF61B9E767500158C8D /* Glob.swift in Sources */,
 				702AABE61B9D042B00158C8D /* Watcher.swift in Sources */,
-				70C8C0BF1B998D1D003D9B27 /* EVObjectDescription.swift in Sources */,
-				70C8C0C01B998D1D003D9B27 /* EVReflection.swift in Sources */,
 				702AABF31B9E767000158C8D /* Regex.swift in Sources */,
 				703E5E4A1B998B400026036C /* AppDelegate.swift in Sources */,
+				702AABF81B9E7C2000158C8D /* Observables.swift in Sources */,
 				702AABF41B9E767000158C8D /* pcrewrapper.c in Sources */,
 				70C8C0B31B998CFD003D9B27 /* Extensions.swift in Sources */,
-				70C8C0BE1B998D1D003D9B27 /* EVObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,6 +304,7 @@
 			files = (
 				702AABEA1B9D6FA200158C8D /* GlobTests.swift in Sources */,
 				702AABEC1B9D778B00158C8D /* RegexTests.swift in Sources */,
+				702AABFA1B9E857400158C8D /* ObservablesTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
