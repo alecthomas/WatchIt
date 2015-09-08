@@ -99,7 +99,7 @@ public class Model: JSONSerializable {
 
     public required init(json: JSON) throws {
         watches.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
-        presets.appendContentsOf(try json["watches"].arrayValue.map({v in try Preset(json: v)}))
+        presets.appendContentsOf(try json["presets"].arrayValue.map({v in try Preset(json: v)}))
     }
 
     public func toJSON() -> JSON {

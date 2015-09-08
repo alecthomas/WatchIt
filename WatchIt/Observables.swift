@@ -8,7 +8,9 @@
 
 import Foundation
 
-public class Subscription<T> {
+public protocol ObservableEvent {}
+
+public class Subscription<T: ObservableEvent> {
     private var handle: Int = 0
     private var observers: [Int:(T) -> ()] = [:]
 
@@ -37,18 +39,30 @@ public func -= <T>(subscription: Subscription<T>, id: Int) {
     subscription.unsubscribe(id)
 }
 
-public enum CollectionChangedEvent<Element> {
+public enum ObservableCollectionChangedEvent<Element>: ObservableEvent {
     case Added(index: Int, elements: [Element])
     case Removed(index: Int, elements: [Element])
     case Replaced(range: Range<Int>, old: [Element], new: [Element])
     case Reset(elements: [Element])
 }
 
+public func  == <T: Equatable>(a: ObservableCollectionChangedEvent<T>, b: ObservableCollectionChangedEvent<T>) -> Bool {
+    switch a {
+    case let .Added(ai, ae):
+        if case let .Added(bi, be) = b { return ai == bi && ae == be }
+    case let .Removed(ai, ae):
+        if case let .Removed(bi, be) = b { return ai == bi && ae == be }
+    case let .Replaced(ar, ao, an):
+        if case let .Replaced(br, bo, bn) = b { return ar == br && ao == bo && an == bn }
+    case let .Reset(ae):
+        if case let .Reset(be) = b { return ae == be }
+    }
+    return false
+}
+
 // An Array-ish object that is observable.
 public class ObservableCollection<Element>: CollectionType, ArrayLiteralConvertible {
-    public typealias CollectionChanged = CollectionChangedEvent<Element>
-
-    public let collectionChanged = Subscription<CollectionChanged>()
+    public let collectionChanged = Subscription<ObservableCollectionChangedEvent<Element>>()
 
     private var source: [Element]
 
