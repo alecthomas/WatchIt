@@ -34,39 +34,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow.showWindow(self)
         updateMenu()
         // Monitor model for changes.
-        model.watches.collectionChanged.subscribe(onWatchesChanged)
-        model.presets.collectionChanged.subscribe(onPresetsChanged)
-        for watch in model.watches {
-            watch.propertyChanged.subscribe({_ in self.save()})
+        model.watches.collectionChanged += {_ in
+            self.save()
+            self.updateMenu()
         }
-        for preset in model.presets {
-            preset.propertyChanged.subscribe({_ in self.save()})
+        model.watches.subscribeElementPropertyChanged({_ in
+            self.save()
+            self.updateMenu()
+        })
+        model.presets.collectionChanged += {_ in
+            self.updateMenu()
         }
+        model.presets.subscribeElementPropertyChanged({_ in
+            self.save()
+        })
     }
 
     func onWatchesChanged(event: ObservableCollectionChangedEvent<Watch>) {
         save()
         updateMenu()
-        switch event {
-        case let .Added(_, elements):
-            for watch in elements {
-                watch.propertyChanged.subscribe({_ in self.save()})
-            }
-        default:
-            break
-        }
     }
 
     func onPresetsChanged(event: ObservableCollectionChangedEvent<Preset>) {
         save()
-        switch event {
-        case let .Added(_, elements):
-            for preset in elements {
-                preset.propertyChanged.subscribe({_ in self.save()})
-            }
-        default:
-            break
-        }
     }
 
     func save() {

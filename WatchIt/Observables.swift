@@ -10,7 +10,7 @@ import Foundation
 
 public protocol ObservableEvent {}
 
-public class Subscription<T: ObservableEvent> {
+public class Subscription<T> {
     private var handle: Int = 0
     private var observers: [Int:(T) -> ()] = [:]
 
@@ -45,6 +45,12 @@ public enum ObservablePropertyChangedEvent<Property: ObservableProperty>: Observ
     case Changed(property: Property)
 }
 
+public protocol ObservableStructure {
+    typealias Property: ObservableProperty
+
+    var propertyChanged: Subscription<ObservablePropertyChangedEvent<Property>> { get }
+}
+
 public enum ObservableCollectionChangedEvent<Element>: ObservableEvent {
     case Added(range: Range<Int>, elements: [Element])
     case Removed(range: Range<Int>, elements: [Element])
@@ -58,6 +64,26 @@ public func  == <T: Equatable>(a: ObservableCollectionChangedEvent<T>, b: Observ
         if case let .Removed(bi, be) = b { return ai == bi && ae == be }
     }
     return false
+}
+
+// Extend ObservableCollection to allow observation of element changes
+// iff the Element is an ObservableStructure.
+public extension ObservableCollection where Element: ObservableStructure {
+    public func subscribeElementPropertyChanged(observer: ObservablePropertyChangedEvent<Element.Property> -> ()) {
+        collectionChanged.subscribe({e in
+            switch e {
+            case let .Added(_, elements):
+                for element in elements {
+                    element.propertyChanged.subscribe(observer)
+                }
+            case .Removed:
+                break
+            }
+        })
+        for element in self {
+            element.propertyChanged.subscribe(observer)
+        }
+    }
 }
 
 // An Array-ish object that is observable.

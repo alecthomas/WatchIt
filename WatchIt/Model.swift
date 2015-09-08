@@ -22,7 +22,7 @@ public enum WatchProperty: ObservableProperty {
     case Pattern
 }
 
-public class Watch: JSONSerializable {
+public class Watch: JSONSerializable, ObservableStructure {
     public let propertyChanged = Subscription<ObservablePropertyChangedEvent<WatchProperty>>()
 
     public var name: String = "" {
@@ -73,7 +73,7 @@ public enum PresetProperty: ObservableProperty {
     case Pattern
 }
 
-public class Preset: JSONSerializable {
+public class Preset: JSONSerializable, ObservableStructure {
     public let propertyChanged = Subscription<ObservablePropertyChangedEvent<PresetProperty>>()
 
     public var name: String = "" {
