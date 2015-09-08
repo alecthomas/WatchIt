@@ -45,15 +45,6 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
 
     @IBOutlet weak var tableView: NSTableView!
 
-    func save() {
-        do {
-            try model.serialize()
-        } catch let e {
-            log.error("could not serialize model: \(e)")
-        }
-        tableView.reloadData()
-    }
-
     override func windowDidLoad() {
         super.windowDidLoad()
 
@@ -75,16 +66,47 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         commandField.nextKeyView = patternField
         patternField.nextKeyView = nameField
 
+        updatePresets()
+
+        self.enabled = false
+
+        window?.center()
+
+        model.watches.collectionChanged.subscribe(onWatchesChanged)
+        model.presets.collectionChanged.subscribe(onPresetsChanged)
+    }
+
+    func updatePresets() {
+        let selected = presetField.indexOfSelectedItem
         presetField.removeAllItems()
         let titles = [""] + model.presets.map({p in p.name})
         presetField.addItemsWithTitles(titles)
         presetField.menu?.delegate = self
         presetField.autoenablesItems = false
         presetField.itemAtIndex(0)?.enabled = false
+        if selected < 0 || selected >= presetField.numberOfItems {
+            presetField.selectItemAtIndex(0)
+        } else {
+            presetField.selectItemAtIndex(selected)
+        }
+    }
 
-        self.enabled = false
+    func onPresetsChanged(event: ObservableCollectionChangedEvent<Preset>) {
+        updatePresets()
+    }
 
-        window?.center()
+    func onWatchesChanged(event: ObservableCollectionChangedEvent<Watch>) {
+        onChange()
+        switch event {
+        case let .Added(range, _):
+            tableView.selectRowIndexes(NSIndexSet(index: range.startIndex), byExtendingSelection: false)
+        case let .Removed(range, _):
+            if range.contains(tableView.selectedRow) {
+                tableView.deselectAll(self)
+            }
+        default:
+            log.error("watches should be added and removed")
+        }
     }
 
     @IBAction func onClose(sender: AnyObject) {
@@ -95,17 +117,12 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         let watch = Watch()
         watch.name = "Name"
         model.watches.append(watch)
-
-        onChange()
-        let index = model.watches.count - 1
-        tableView.selectRowIndexes(NSIndexSet(index: index), byExtendingSelection: false)
     }
 
     @IBAction func onRemove(sender: AnyObject) {
         for (offset, row) in tableView.selectedRowIndexes.enumerate() {
             model.watches.removeAtIndex(row - offset)
         }
-        onChange()
     }
 
     @IBAction func onDirDialog(sender: AnyObject) {
@@ -126,7 +143,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     }
 
     var selectedWatch: Watch? {
-        if tableView.selectedRow == -1 {
+        if tableView.selectedRow == -1 || tableView.selectedRow >= model.watches.count {
             return nil
         }
         return model.watches[tableView.selectedRow]
@@ -173,7 +190,6 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         if !Regex.valid(watch.pattern) {
             patternField.textColor = NSColor.redColor()
         }
-        save()
     }
 
     func tableViewSelectionDidChange(notification: NSNotification) {

@@ -20,10 +20,12 @@ class ObservableTests: XCTestCase {
         collection.insert(0, atIndex: 0)
         collection[0] = 3
         collection.removeAtIndex(0)
-        XCTAssertTrue(ObservableCollectionChangedEvent.Added(index: 0, elements: [1]) == actual[0])
-        XCTAssertTrue(ObservableCollectionChangedEvent.Added(index: 1, elements: [2]) == actual[1])
-        XCTAssertTrue(ObservableCollectionChangedEvent.Added(index: 0, elements: [0]) == actual[2])
-        XCTAssertTrue(ObservableCollectionChangedEvent.Replaced(range: Range<Int>(start: 0, end: 0), old: [0], new: [3]) == actual[3])
-        XCTAssertTrue(ObservableCollectionChangedEvent.Removed(index: 0, elements: [3]) == actual[4])
+        let zeroRange = Range(start: 0, end: 0)
+        XCTAssertTrue(ObservableCollectionChangedEvent.Added(range: zeroRange, elements: [1]) == actual[0])
+        XCTAssertTrue(ObservableCollectionChangedEvent.Added(range: Range(start: 1, end: 1), elements: [2]) == actual[1])
+        XCTAssertTrue(ObservableCollectionChangedEvent.Added(range: zeroRange, elements: [0]) == actual[2])
+        XCTAssertTrue(ObservableCollectionChangedEvent.Removed(range: zeroRange, elements: [0]) == actual[3])
+        XCTAssertTrue(ObservableCollectionChangedEvent.Added(range: zeroRange, elements: [3]) == actual[4])
+        XCTAssertTrue(ObservableCollectionChangedEvent.Removed(range: zeroRange, elements: [3]) == actual[5])
     }
 }

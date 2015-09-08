@@ -39,11 +39,15 @@ public func -= <T>(subscription: Subscription<T>, id: Int) {
     subscription.unsubscribe(id)
 }
 
+public protocol ObservableProperty {}
+
+public enum ObservablePropertyChangedEvent<Property: ObservableProperty>: ObservableEvent {
+    case Changed(property: Property)
+}
+
 public enum ObservableCollectionChangedEvent<Element>: ObservableEvent {
-    case Added(index: Int, elements: [Element])
-    case Removed(index: Int, elements: [Element])
-    case Replaced(range: Range<Int>, old: [Element], new: [Element])
-    case Reset(elements: [Element])
+    case Added(range: Range<Int>, elements: [Element])
+    case Removed(range: Range<Int>, elements: [Element])
 }
 
 public func  == <T: Equatable>(a: ObservableCollectionChangedEvent<T>, b: ObservableCollectionChangedEvent<T>) -> Bool {
@@ -52,10 +56,6 @@ public func  == <T: Equatable>(a: ObservableCollectionChangedEvent<T>, b: Observ
         if case let .Added(bi, be) = b { return ai == bi && ae == be }
     case let .Removed(ai, ae):
         if case let .Removed(bi, be) = b { return ai == bi && ae == be }
-    case let .Replaced(ar, ao, an):
-        if case let .Replaced(br, bo, bn) = b { return ar == br && ao == bo && an == bn }
-    case let .Reset(ae):
-        if case let .Reset(be) = b { return ae == be }
     }
     return false
 }
@@ -84,50 +84,52 @@ public class ObservableCollection<Element>: CollectionType, ArrayLiteralConverti
 
     public func append(element: Element) {
         source.append(element)
-        collectionChanged.emit(.Added(index: source.count - 1, elements: [element]))
+        let range = Range<Int>(start: source.count - 1, end: source.count - 1)
+        collectionChanged.emit(.Added(range: range, elements: [element]))
     }
 
     public func removeAll() {
         let elements = source
         source.removeAll()
-        collectionChanged.emit(.Reset(elements: elements))
+        collectionChanged.emit(.Removed(range: Range(start: source.startIndex, end: source.endIndex), elements: elements))
     }
 
     public func removeAtIndex(index: Int) -> Element {
         let element = source.removeAtIndex(index)
-        collectionChanged.emit(.Removed(index: index, elements: [element]))
+        collectionChanged.emit(.Removed(range: Range(start: index, end: index), elements: [element]))
         return element
     }
 
     public func removeFirst() -> Element {
         let element = source.removeFirst()
-        collectionChanged.emit(.Removed(index: 0, elements: [element]))
+        collectionChanged.emit(.Removed(range: Range(start: 0, end: 0), elements: [element]))
         return element
     }
 
     public func removeLast() -> Element {
         let element = source.removeLast()
-        collectionChanged.emit(.Removed(index: source.count, elements: [element]))
+        collectionChanged.emit(.Removed(range: Range(start: count, end: count), elements: [element]))
         return element
     }
 
     public func insert(element: Element, atIndex i: Int) {
         source.insert(element, atIndex: i)
-        collectionChanged.emit(.Added(index: i, elements: [element]))
+        collectionChanged.emit(.Added(range: Range(start: i, end: i), elements: [element]))
     }
 
     public func appendContentsOf<S : SequenceType where S.Generator.Element == Element>(newElements: S) {
         let index = source.count
         let elements = Array(newElements)
         source.appendContentsOf(newElements)
-        collectionChanged.emit(.Added(index: index, elements: elements))
+        collectionChanged.emit(.Added(range: Range(start: index, end: index+elements.count), elements: elements))
     }
 
-    public func replaceRange<C : CollectionType where C.Generator.Element == Element>(subRange: Range<Int>, with elements: C) {
-        let old = Array(source[subRange])
+    public func replaceRange<C : CollectionType where C.Generator.Element == Element>(range: Range<Int>, with elements: C) {
+        let old = Array(source[range])
         let new = Array(elements)
-        source.replaceRange(subRange, with: elements)
-        collectionChanged.emit(.Replaced(range: subRange, old: old, new: new))
+        source.replaceRange(range, with: elements)
+        collectionChanged.emit(.Removed(range: range, elements: old))
+        collectionChanged.emit(.Added(range: Range(start: range.startIndex, end: range.endIndex), elements: new))
     }
 
     public func popLast() -> Element? {
@@ -140,8 +142,10 @@ public class ObservableCollection<Element>: CollectionType, ArrayLiteralConverti
         }
         set(value) {
             let old = source[index]
+            let range = Range<Int>(start: index, end: index)
             source[index] = value
-            collectionChanged.emit(.Replaced(range: Range<Int>(start: index, end: index), old: [old], new: [value]))
+            collectionChanged.emit(.Removed(range: range, elements: [old]))
+            collectionChanged.emit(.Added(range: range, elements: [value]))
         }
     }
 
@@ -152,7 +156,8 @@ public class ObservableCollection<Element>: CollectionType, ArrayLiteralConverti
         set(value) {
             let old = Array(source[range])
             source[range] = value
-            collectionChanged.emit(.Replaced(range: range, old: old, new: Array(value)))
+            collectionChanged.emit(.Removed(range: range, elements: old))
+            collectionChanged.emit(.Added(range: Range(start: range.startIndex, end: range.startIndex), elements: Array(value)))
         }
     }
 }

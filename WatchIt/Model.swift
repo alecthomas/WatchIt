@@ -14,12 +14,32 @@ public protocol JSONSerializable {
     func toJSON() -> JSON
 }
 
+public enum WatchProperty: ObservableProperty {
+    case Name
+    case Directory
+    case Glob
+    case Command
+    case Pattern
+}
+
 public class Watch: JSONSerializable {
-    public var name: String = ""
-    public var directory: String = ""
-    public var glob: String = ""
-    public var command: String = ""
-    public var pattern: String = ""
+    public let propertyChanged = Subscription<ObservablePropertyChangedEvent<WatchProperty>>()
+
+    public var name: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Name)) }
+    }
+    public var directory: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Directory)) }
+    }
+    public var glob: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Glob)) }
+    }
+    public var command: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Command)) }
+    }
+    public var pattern: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Pattern)) }
+    }
 
     public var emptyPreset: Bool {
         return glob == "" && command == "" && pattern == ""
@@ -46,11 +66,28 @@ public class Watch: JSONSerializable {
     }
 }
 
+public enum PresetProperty: ObservableProperty {
+    case Name
+    case Glob
+    case Command
+    case Pattern
+}
+
 public class Preset: JSONSerializable {
-    public var name: String = ""
-    public var glob: String = ""
-    public var command: String = ""
-    public var pattern: String = ""
+    public let propertyChanged = Subscription<ObservablePropertyChangedEvent<PresetProperty>>()
+
+    public var name: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Name)) }
+    }
+    public var glob: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Glob)) }
+    }
+    public var command: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Command)) }
+    }
+    public var pattern: String = "" {
+        didSet { propertyChanged.emit(.Changed(property: .Pattern)) }
+    }
 
     public init() {}
 
