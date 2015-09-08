@@ -13,8 +13,8 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="WatchIt" customModuleProvider="target">
             <connections>
-                <outlet property="mainMenu" destination="AYu-sK-qS6" id="q04-Af-1of"/>
                 <outlet property="menu" destination="298-8m-aBF" id="EhO-Ma-oD2"/>
+                <outlet property="watchesMenu" destination="Trd-zu-IDM" id="ypQ-Az-mVG"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
@@ -669,7 +669,19 @@
         </menu>
         <menu id="298-8m-aBF">
             <items>
-                <menuItem isSeparatorItem="YES" id="yML-BM-M7z"/>
+                <menuItem title="Watches" id="aCI-fN-jyJ">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Watches" id="Trd-zu-IDM">
+                        <items>
+                            <menuItem title="Item" id="seg-wl-LKS">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem isSeparatorItem="YES" id="yML-BM-M7z">
+                    <accessibility identifier="separator"/>
+                </menuItem>
                 <menuItem title="Preferences" id="RF1-Yw-mZ2">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>

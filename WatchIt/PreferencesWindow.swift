@@ -220,24 +220,28 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
             }
             let preset = model.presets[presetField.indexOfSelectedItem - 1]
             // Matches an existing preset, just replace it without notifying.
-            if model.presetForWatch(watch) != nil {
+            if watch.emptyPreset || model.presetForWatch(watch) != nil {
                 updateWithPreset(preset)
             } else {
-                let alert = NSAlert()
-                alert.addButtonWithTitle("Cancel")
-                alert.addButtonWithTitle("Ok")
-                alert.messageText = "Replace existing configuration with preset?"
-                alert.informativeText = "This will replace your existing glob, command and pattern."
-                alert.alertStyle = .WarningAlertStyle
-                alert.beginSheetModalForWindow(window!, completionHandler: {response in
-                    if response == NSAlertSecondButtonReturn {
-                        self.updateWithPreset(preset)
-                    } else {
-                        self.presetField.selectItemAtIndex(0)
-                    }
-                })
+                confirmPreset(preset)
             }
         }
+    }
+
+    func confirmPreset(preset: Preset) {
+        let alert = NSAlert()
+        alert.addButtonWithTitle("Cancel")
+        alert.addButtonWithTitle("Ok")
+        alert.messageText = "Replace existing configuration with preset?"
+        alert.informativeText = "This will replace your existing glob, command and pattern."
+        alert.alertStyle = .WarningAlertStyle
+        alert.beginSheetModalForWindow(window!, completionHandler: {response in
+            if response == NSAlertSecondButtonReturn {
+                self.updateWithPreset(preset)
+            } else {
+                self.presetField.selectItemAtIndex(0)
+            }
+        })
     }
 
     func updateWithPreset(preset: Preset) {

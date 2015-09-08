@@ -8,15 +8,19 @@
 
 import Foundation
 
-class Watch: EVObject {
+public class Watch: EVObject {
     var name: String = ""
     var directory: String = ""
     var glob: String = ""
     var command: String = ""
     var pattern: String = ""
+
+    var emptyPreset: Bool {
+        return glob == "" && command == "" && pattern == ""
+    }
 }
 
-class Preset: EVObject {
+public class Preset: EVObject {
     var name: String = ""
     var glob: String = ""
     var command: String = ""
@@ -38,7 +42,7 @@ let modelDirectory =  (NSSearchPathForDirectoriesInDomains(.ApplicationSupportDi
 var modelPath = modelDirectory.stringByAppendingPathComponent("WatchIt.json")
 
 
-class Model: EVObject {
+public class Model: EVObject {
     var watches: [Watch] = []
     var presets: [Preset] = []
 

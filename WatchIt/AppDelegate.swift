@@ -21,20 +21,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var monitors: FileSystemEventMonitor?
 
     var statusItem: NSStatusItem = NSStatusBar.systemStatusBar().statusItemWithLength(-1)
+    var watcher = Watcher(model: model)
 
     @IBOutlet weak var menu: NSMenu!
-    @IBOutlet weak var mainMenu: NSMenu!
+    @IBOutlet weak var watchesMenu: NSMenu!
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-        NSApplication.sharedApplication().mainMenu = mainMenu
-        monitors = FileSystemEventMonitor(pathsToWatch: ["~/Documents".stringByExpandingTildeInPath], latency: 1, watchRoot: true, queue: dispatch_get_main_queue()) {events in
-            print(events)
-        }
         let icon = NSImage(named: "eye-icon")
         icon?.template = true
         statusItem.image = icon
         statusItem.menu = menu
         preferencesWindow.showWindow(self)
+        updateMenu()
+    }
+
+    func updateMenu() {
+        watchesMenu.removeAllItems()
+        for (i, watch) in model.watches.enumerate() {
+            watchesMenu.insertItemWithTitle(watch.name, action: nil, keyEquivalent: "", atIndex: i)
+        }
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
