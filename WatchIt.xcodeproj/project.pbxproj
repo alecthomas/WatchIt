@@ -142,9 +142,9 @@
 		703E5E481B998B400026036C /* WatchIt */ = {
 			isa = PBXGroup;
 			children = (
-				702AABF51B9E767500158C8D /* Glob.swift */,
 				702AABED1B9E627000158C8D /* Regex */,
 				70C8C0AB1B998CFD003D9B27 /* Extensions.swift */,
+				702AABF51B9E767500158C8D /* Glob.swift */,
 				70C8C0AC1B998CFD003D9B27 /* Model.swift */,
 				702AABE51B9D042B00158C8D /* Watcher.swift */,
 				70C8C0AF1B998CFD003D9B27 /* PreferencesWindow.swift */,

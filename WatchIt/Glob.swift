@@ -24,7 +24,11 @@ public func glob(pattern: String, path: String) -> Bool {
                 out += "[^/]*"
                 star = false
             }
-            out.append(ch)
+            if ch == "?" {
+                out += "."
+            } else {
+                out.append(ch)
+            }
         }
     }
     if star {
