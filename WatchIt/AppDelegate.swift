@@ -34,28 +34,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow.showWindow(self)
         updateMenu()
         // Monitor model for changes.
-        model.watches.collectionChanged += {_ in
-            self.save()
-            self.updateMenu()
-        }
-        model.watches.subscribeElementPropertyChanged({_ in
+        model.watches.observeNew({_ in
             self.save()
             self.updateMenu()
         })
-        model.presets.collectionChanged += {_ in
-            self.updateMenu()
-        }
-        model.presets.subscribeElementPropertyChanged({_ in
+        model.presets.observeNew({_ in
             self.save()
+            self.updateMenu()
         })
     }
 
-    func onWatchesChanged(event: ObservableCollectionChangedEvent<Watch>) {
+    func onWatchesChanged() {
         save()
         updateMenu()
     }
 
-    func onPresetsChanged(event: ObservableCollectionChangedEvent<Preset>) {
+    func onPresetsChanged() {
         save()
     }
 
@@ -70,7 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func updateMenu() {
         watchesMenu.removeAllItems()
         for (i, watch) in model.watches.enumerate() {
-            watchesMenu.insertItemWithTitle(watch.name, action: nil, keyEquivalent: "", atIndex: i)
+            watchesMenu.insertItemWithTitle(watch.name.value, action: nil, keyEquivalent: "", atIndex: i)
         }
     }
 

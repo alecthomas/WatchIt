@@ -19,7 +19,7 @@ public class Watcher {
     }
 
     public func update() {
-        let paths: [String] = self.model.watches.map({w in w.directory.stringByExpandingTildeInPath})
+        let paths: [String] = self.model.watches.map({w in w.directory.value.stringByExpandingTildeInPath})
         log.info("Watching \(paths)")
         self.monitor = FileSystemEventMonitor(
             pathsToWatch: paths,

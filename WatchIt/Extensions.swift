@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Bond
 
 extension String {
     public var stringByExpandingTildeInPath: String {
@@ -20,4 +21,16 @@ extension String {
         }
         return self
     }
+}
+
+public func == <T: Equatable>(a: Observable<T>, b: Observable<T>) -> Bool {
+    return a.value == b.value
+}
+
+public func == <T: Equatable>(a: Observable<T>, b: T) -> Bool {
+    return a.value == b
+}
+
+public func == <T: Equatable>(a: T, b: Observable<T>) -> Bool {
+    return a == b.value
 }

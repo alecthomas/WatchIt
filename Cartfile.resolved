@@ -1,4 +1,4 @@
-github "duemunk/Async" "abe23c18d8d3a708a325b5db10231388e1ca5b88"
+github "SwiftBond/Bond" "v4.0.0-beta3"
 github "alecthomas/FileSystemEvents" "9c0f5754a6dfc4f2f2c41738cf067ca93034978f"
-github "SwiftyJSON/SwiftyJSON" "f269523ac572979245baa99c8475eab73caf1e9b"
+github "SwiftyJSON/SwiftyJSON" "d4df13c66146a8e9c8d96c852746a08363003d36"
 github "DaveWoodCom/XCGLogger" "9a317df3c037d89be06b0546f76c43d7b120660d"

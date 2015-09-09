@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import Bond
 
 class WatchesTableDataSource: NSObject, NSTableViewDataSource {
     func numberOfRowsInTableView(tableView: NSTableView) -> Int {
@@ -16,7 +17,7 @@ class WatchesTableDataSource: NSObject, NSTableViewDataSource {
     func tableView(tableView: NSTableView, objectValueForTableColumn tableColumn: NSTableColumn?, row: Int) -> AnyObject? {
         switch tableColumn!.identifier {
         case "name":
-            return model.watches[row].name
+            return model.watches[row].name.value
         default:
             return "?"
         }
@@ -25,7 +26,7 @@ class WatchesTableDataSource: NSObject, NSTableViewDataSource {
     func tableView(tableView: NSTableView, setObjectValue object: AnyObject?, forTableColumn tableColumn: NSTableColumn?, row: Int) {
         switch tableColumn!.identifier {
         case "name":
-            model.watches[row].name = object as! String
+            model.watches[row].name.value = object as! String
         default:
             break
         }
@@ -44,6 +45,8 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     @IBOutlet weak var patternField: NSTextField!
 
     @IBOutlet weak var tableView: NSTableView!
+
+    var selectedWatch = Observable<Watch?>(nil)
 
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -72,14 +75,15 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
 
         window?.center()
 
-        model.watches.collectionChanged.subscribe(onWatchesChanged)
-        model.presets.collectionChanged.subscribe(onPresetsChanged)
+        model.watches.observeNew(onWatchesChanged)
+        model.presets.observeNew(onPresetsChanged)
+        selectedWatch.observeNew(onSelectedWatchChanged)
     }
 
     func updatePresets() {
         let selected = presetField.indexOfSelectedItem
         presetField.removeAllItems()
-        let titles = [""] + model.presets.map({p in p.name})
+        let titles = [""] + model.presets.map({p in p.name.value})
         presetField.addItemsWithTitles(titles)
         presetField.menu?.delegate = self
         presetField.autoenablesItems = false
@@ -91,16 +95,20 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         }
     }
 
-    func onPresetsChanged(event: ObservableCollectionChangedEvent<Preset>) {
+    func onSelectedWatchChanged(watch: Watch?) {
+        onChange()
+    }
+
+    func onPresetsChanged(event: ObservableArrayEvent<[Preset]>) {
         updatePresets()
     }
 
-    func onWatchesChanged(event: ObservableCollectionChangedEvent<Watch>) {
+    func onWatchesChanged(event: ObservableArrayEvent<[Watch]>) {
         onChange()
-        switch event {
-        case let .Added(range, _):
-            tableView.selectRowIndexes(NSIndexSet(index: range.startIndex), byExtendingSelection: false)
-        case let .Removed(range, _):
+        switch event.operation {
+        case let .Insert(elements, index):
+            tableView.selectRowIndexes(NSIndexSet(index: index + elements.count - 1), byExtendingSelection: false)
+        case let .Remove(range):
             if range.contains(tableView.selectedRow) {
                 tableView.deselectAll(self)
             }
@@ -115,7 +123,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
 
     @IBAction func onAdd(sender: AnyObject) {
         let watch = Watch()
-        watch.name = "Name"
+        watch.name.value = "Name"
         model.watches.append(watch)
     }
 
@@ -135,18 +143,11 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         openPanel.resolvesAliases = false
         openPanel.beginSheetModalForWindow(self.window!, completionHandler: {v in
             if v == NSModalResponseOK, let path: String = openPanel.URL?.path {
-                self.selectedWatch?.directory = path.stringByReplacingHomeWithTilde
+                self.selectedWatch.value?.directory.value = path.stringByReplacingHomeWithTilde
                 self.dirField.stringValue = path.stringByReplacingHomeWithTilde
                 self.onChange()
             }
         })
-    }
-
-    var selectedWatch: Watch? {
-        if tableView.selectedRow == -1 || tableView.selectedRow >= model.watches.count {
-            return nil
-        }
-        return model.watches[tableView.selectedRow]
     }
 
     var enabled: Bool {
@@ -164,30 +165,29 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
 
     func onChange() {
         tableView.reloadData()
-        let watch = selectedWatch ?? Watch()
-        nameField.stringValue = watch.name
-        dirField.stringValue = watch.directory
-        globField.stringValue = watch.glob
-        commandField.stringValue = watch.command
-        patternField.stringValue = watch.pattern
+        let watch = selectedWatch.value ?? Watch()
+        watch.name.bindTo(nameField.bnd_text)
+        watch.directory.bindTo(dirField.bnd_text)
+        watch.glob.bindTo(globField.bnd_text)
+        watch.command.bindTo(commandField.bnd_text)
+        watch.pattern.bindTo(patternField.bnd_text)
+        var color = NSColor.textColor()
         if let preset = model.presetForWatch(watch) {
-            presetField.selectItemWithTitle(preset.name)
-            globField.textColor = NSColor.grayColor()
-            commandField.textColor = NSColor.grayColor()
-            patternField.textColor = NSColor.grayColor()
+            presetField.selectItemWithTitle(preset.name.value)
+            color = NSColor.grayColor()
         } else {
             presetField.selectItemAtIndex(0)
-            globField.textColor = NSColor.textColor()
-            commandField.textColor = NSColor.textColor()
-            patternField.textColor = NSColor.textColor()
         }
+        globField.textColor = color
+        commandField.textColor = color
+        patternField.textColor = color
         var isDir: ObjCBool = false
         if NSFileManager.defaultManager().fileExistsAtPath(dirField.stringValue.stringByExpandingTildeInPath, isDirectory: &isDir) && isDir {
             dirField.textColor = NSColor.textColor()
         } else {
             dirField.textColor = NSColor.redColor()
         }
-        if !Regex.valid(watch.pattern) {
+        if !Regex.valid(watch.pattern.value) {
             patternField.textColor = NSColor.redColor()
         }
     }
@@ -195,6 +195,11 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     func tableViewSelectionDidChange(notification: NSNotification) {
         let tableView = notification.object as! NSTableView
         let index = tableView.selectedRow
+        if index != -1 {
+            self.selectedWatch.value = model.watches[index]
+        } else {
+            self.selectedWatch.value = nil
+        }
         onChange()
         self.enabled = index != -1
         if self.enabled {
@@ -203,19 +208,19 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     }
 
     override func controlTextDidChange(obj: NSNotification) {
-        guard let watch = selectedWatch else { return }
+        guard let watch = selectedWatch.value else { return }
         guard let field = obj.object as? NSTextField else { return }
         switch field.identifier! {
         case "name":
-            watch.name = field.stringValue
+            watch.name.value = field.stringValue
         case "directory":
-            watch.directory = field.stringValue
+            watch.directory.value = field.stringValue
         case "glob":
-            watch.glob = field.stringValue
+            watch.glob.value = field.stringValue
         case "command":
-            watch.command = field.stringValue
+            watch.command.value = field.stringValue
         case "pattern":
-            watch.pattern = field.stringValue
+            watch.pattern.value = field.stringValue
         default:
             break
         }
@@ -225,7 +230,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     @IBAction func onPreset(sender: AnyObject) {
         if model.presets.isEmpty {
             return
-        } else if let watch = selectedWatch {
+        } else if let watch = selectedWatch.value {
             if presetField.indexOfSelectedItem == 0 {
                 if let index = model.presets.indexOf({p in p ~= watch}) {
                     presetField.selectItemAtIndex(index+1)
@@ -261,7 +266,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     }
 
     func updateWithPreset(preset: Preset) {
-        if let watch = selectedWatch {
+        if let watch = selectedWatch.value {
             watch.glob = preset.glob
             watch.command = preset.command
             watch.pattern = preset.pattern

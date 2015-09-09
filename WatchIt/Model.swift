@@ -8,38 +8,19 @@
 
 import Foundation
 import SwiftyJSON
+import Bond
 
 public protocol JSONSerializable {
     init(json: JSON) throws
     func toJSON() -> JSON
 }
 
-public enum WatchProperty: ObservableProperty {
-    case Name
-    case Directory
-    case Glob
-    case Command
-    case Pattern
-}
-
-public class Watch: JSONSerializable, ObservableStructure {
-    public let propertyChanged = Subscription<ObservablePropertyChangedEvent<WatchProperty>>()
-
-    public var name: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Name)) }
-    }
-    public var directory: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Directory)) }
-    }
-    public var glob: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Glob)) }
-    }
-    public var command: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Command)) }
-    }
-    public var pattern: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Pattern)) }
-    }
+public class Watch: JSONSerializable {
+    public var name = Observable<String>("")
+    public var directory = Observable<String>("")
+    public var glob = Observable<String>("")
+    public var command = Observable<String>("")
+    public var pattern = Observable<String>("")
 
     public var emptyPreset: Bool {
         return glob == "" && command == "" && pattern == ""
@@ -48,62 +29,45 @@ public class Watch: JSONSerializable, ObservableStructure {
     public init() {}
 
     public required init(json: JSON) throws {
-        self.name = json["name"].stringValue
-        self.directory = json["directory"].stringValue
-        self.glob = json["glob"].stringValue
-        self.command = json["command"].stringValue
-        self.pattern = json["pattern"].stringValue
+        self.name.value = json["name"].stringValue
+        self.directory.value = json["directory"].stringValue
+        self.glob.value = json["glob"].stringValue
+        self.command.value = json["command"].stringValue
+        self.pattern.value = json["pattern"].stringValue
     }
 
     public func toJSON() -> JSON {
         return JSON([
-            "name": name,
-            "directory": directory,
-            "glob": glob,
-            "command": command,
-            "pattern": pattern
+            "name": name.value,
+            "directory": directory.value,
+            "glob": glob.value,
+            "command": command.value,
+            "pattern": pattern.value
             ])
     }
 }
 
-public enum PresetProperty: ObservableProperty {
-    case Name
-    case Glob
-    case Command
-    case Pattern
-}
-
-public class Preset: JSONSerializable, ObservableStructure {
-    public let propertyChanged = Subscription<ObservablePropertyChangedEvent<PresetProperty>>()
-
-    public var name: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Name)) }
-    }
-    public var glob: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Glob)) }
-    }
-    public var command: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Command)) }
-    }
-    public var pattern: String = "" {
-        didSet { propertyChanged.emit(.Changed(property: .Pattern)) }
-    }
+public class Preset: JSONSerializable {
+    public var name = Observable<String>("")
+    public var glob = Observable<String>("")
+    public var command = Observable<String>("")
+    public var pattern = Observable<String>("")
 
     public init() {}
 
     public required init(json: JSON) throws {
-        self.name = json["name"].stringValue
-        self.glob = json["glob"].stringValue
-        self.command = json["command"].stringValue
-        self.pattern = json["pattern"].stringValue
+        self.name.value = json["name"].stringValue
+        self.glob.value = json["glob"].stringValue
+        self.command.value = json["command"].stringValue
+        self.pattern.value = json["pattern"].stringValue
     }
 
     public func toJSON() -> JSON {
         return JSON([
-            "name": name,
-            "glob": glob,
-            "command": command,
-            "pattern": pattern
+            "name": name.value,
+            "glob": glob.value,
+            "command": command.value,
+            "pattern": pattern.value
             ])
     }
 }
@@ -124,29 +88,28 @@ var modelPath = modelDirectory.stringByAppendingPathComponent("WatchIt.json")
 
 
 public class Model: JSONSerializable {
-    var watches: ObservableCollection<Watch> = []
-    var presets: ObservableCollection<Preset> = []
+    public var watches = ObservableArray<Watch>([])
+    public var presets = ObservableArray<Preset>([])
 
-    func presetForWatch(watch: Watch) -> Preset? {
+    public func presetForWatch(watch: Watch) -> Preset? {
         return presets.filter({p in p ~= watch}).first
     }
 
-    public init() {
-    }
+    public init() {}
 
     public required init(json: JSON) throws {
-        watches.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
-        presets.appendContentsOf(try json["presets"].arrayValue.map({v in try Preset(json: v)}))
+        watches.array.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
+        presets.array.appendContentsOf(try json["presets"].arrayValue.map({v in try Preset(json: v)}))
     }
 
     public func toJSON() -> JSON {
         return JSON([
-            "watches": JSON(watches.map({v in v.toJSON()})),
-            "presets": JSON(presets.map({v in v.toJSON()})),
+            "watches": JSON(watches.array.map({v in v.toJSON()})),
+            "presets": JSON(presets.array.map({v in v.toJSON()})),
             ])
     }
 
-    static func deserialize() -> Model {
+    public static func deserialize() -> Model {
         log.info("deserializing model from \(modelPath)")
         do {
             guard let data = NSData(contentsOfFile: modelPath) else { return  Model() }
@@ -156,7 +119,7 @@ public class Model: JSONSerializable {
         }
     }
 
-    func serialize() throws {
+    public func serialize() throws {
         log.info("serializing model to \(modelPath)")
         let data = try self.toJSON().rawData()
         data.writeToFile(modelPath, atomically: true)
