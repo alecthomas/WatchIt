@@ -98,7 +98,7 @@
                         <subviews>
                             <textField identifier="name" toolTip="Name of watch." verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ve7-Ru-9ca">
                                 <rect key="frame" x="97" y="346" width="281" height="22"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Name of watch" drawsBackground="YES" usesSingleLineMode="YES" id="cHe-m1-Dri">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Name of watch" drawsBackground="YES" usesSingleLineMode="YES" id="cHe-m1-Dri">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -114,7 +114,7 @@
                             </textField>
                             <textField identifier="directory" toolTip="Root directory to watch." verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AkW-aH-hyN">
                                 <rect key="frame" x="97" y="316" width="257" height="22"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Root directory to watch." drawsBackground="YES" usesSingleLineMode="YES" id="qn0-Cd-8E5">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Root directory to watch." drawsBackground="YES" usesSingleLineMode="YES" id="qn0-Cd-8E5">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -130,7 +130,7 @@
                             </textField>
                             <textField identifier="glob" toolTip="Glob matching files to watch." verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Xec-O7-Doq">
                                 <rect key="frame" x="97" y="257" width="281" height="22"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Glob matching files to watch." drawsBackground="YES" usesSingleLineMode="YES" id="5An-XM-4ir">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Glob matching files to watch." drawsBackground="YES" usesSingleLineMode="YES" id="5An-XM-4ir">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -146,7 +146,7 @@
                             </textField>
                             <textField identifier="command" toolTip="Command to execute when watched files change." verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xys-q4-IF8">
                                 <rect key="frame" x="97" y="138" width="281" height="110"/>
-                                <textFieldCell key="cell" lineBreakMode="charWrapping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Command to execute when watched files change" drawsBackground="YES" id="m2V-2g-NJE">
+                                <textFieldCell key="cell" lineBreakMode="charWrapping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Command to execute when watched files change" drawsBackground="YES" id="m2V-2g-NJE">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -170,7 +170,7 @@
                             </textField>
                             <textField identifier="pattern" toolTip="PCRE compatibile regular expression to match against command output." verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ggn-Ya-ioT">
                                 <rect key="frame" x="97" y="20" width="281" height="110"/>
-                                <textFieldCell key="cell" lineBreakMode="charWrapping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="PCRE compatibile regular expression to match against command output." drawsBackground="YES" id="quO-My-OHN">
+                                <textFieldCell key="cell" lineBreakMode="charWrapping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="PCRE compatibile regular expression to match against command output." drawsBackground="YES" id="quO-My-OHN">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -205,9 +205,6 @@
                                         </items>
                                     </menu>
                                 </popUpButtonCell>
-                                <connections>
-                                    <action selector="onPreset:" target="-2" id="gAF-zv-KAT"/>
-                                </connections>
                             </popUpButton>
                         </subviews>
                     </customView>

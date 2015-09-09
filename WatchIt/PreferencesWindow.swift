@@ -33,7 +33,8 @@ class WatchesTableDataSource: NSObject, NSTableViewDataSource {
     }
 }
 
-class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDelegate, NSMenuDelegate  {
+
+class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate, NSTextFieldDelegate  {
     var dataSource = WatchesTableDataSource()
 
     @IBOutlet weak var controlGroup: NSView!
@@ -47,19 +48,14 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
 
     @IBOutlet weak var tableView: NSTableView!
 
-    var selectedWatch = Observable<Watch?>(nil)
+    var detail = PreferencesDetailViewModel()
+    var presetTextColor = Observable<NSColor>(NSColor.textColor())
 
     override func windowDidLoad() {
         super.windowDidLoad()
 
         tableView.setDelegate(self)
         tableView.setDataSource(dataSource)
-
-        nameField.delegate = self
-        dirField.delegate = self
-        globField.delegate = self
-        commandField.delegate = self
-        patternField.delegate = self
 
         // Tab cycle order.
         window?.initialFirstResponder = nameField
@@ -70,15 +66,74 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         commandField.nextKeyView = patternField
         patternField.nextKeyView = nameField
 
+        // Allow insertion of newlines
+        commandField.delegate = self
+        patternField.delegate = self
+
         updatePresets()
 
         self.enabled = false
 
         window?.center()
 
+        // Update preset field color when this is set...
+        // It's surprising that Bond doesn't have a way to one-way bind to non-Observables.
+        presetTextColor.observeNew({color in
+            self.globField.textColor = color
+            self.commandField.textColor = color
+            self.patternField.textColor = color
+        })
+
         model.watches.observeNew(onWatchesChanged)
         model.presets.observeNew(onPresetsChanged)
-        selectedWatch.observeNew(onSelectedWatchChanged)
+
+        detail.watch.name.bidirectionalBindTo(nameField.bnd_text)
+        detail.watch.directory.bidirectionalBindTo(dirField.bnd_text)
+        detail.watch.glob.bidirectionalBindTo(globField.bnd_text)
+        detail.watch.command.bidirectionalBindTo(commandField.bnd_text)
+        detail.watch.pattern.bidirectionalBindTo(patternField.bnd_text)
+
+        nameField.bnd_text
+            .observeNew({_ in
+                self.tableView.reloadData()
+            })
+
+        dirField.bnd_text
+            .observeNew({text in
+                var isDir: ObjCBool = false
+                if NSFileManager.defaultManager().fileExistsAtPath(text.stringByExpandingTildeInPath, isDirectory: &isDir) && isDir {
+                    self.dirField.textColor = NSColor.textColor()
+                } else {
+                    self.dirField.textColor = NSColor.redColor()
+                }
+            })
+
+        // Update preset drop-down when preset fields change.
+        detail.presetFields
+            .observeNew({(glob, command, pattern) in
+                if let preset = model.presetForWatch(self.detail.watch) {
+                    self.presetField.selectItemWithTitle(preset.name.value)
+                    self.presetTextColor.value = NSColor.grayColor()
+                } else {
+                    self.presetField.selectItemAtIndex(0)
+                    self.presetTextColor.value = NSColor.textColor()
+                }
+                if !Regex.valid(pattern) {
+                    self.patternField.textColor = NSColor.redColor()
+                }
+            })
+
+        // Update model when preset changes.
+        presetField.bnd_controlEvent
+            .map({event in (event as! Int) - 1})
+            .filter({index in index >= 0})
+            .observeNew({index in
+                if self.detail.preset.value == nil {
+                    self.confirmPreset(model.presets[index])
+                } else {
+                    self.detail.preset.value = model.presets[index]
+                }
+            })
     }
 
     func updatePresets() {
@@ -96,16 +151,12 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         }
     }
 
-    func onSelectedWatchChanged(watch: Watch?) {
-        onChange()
-    }
-
     func onPresetsChanged(event: ObservableArrayEvent<[Preset]>) {
         updatePresets()
     }
 
     func onWatchesChanged(event: ObservableArrayEvent<[Watch]>) {
-        onChange()
+        tableView.reloadData()
         switch event.operation {
         case let .Insert(elements, index):
             tableView.selectRowIndexes(NSIndexSet(index: index + elements.count - 1), byExtendingSelection: false)
@@ -144,9 +195,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         openPanel.resolvesAliases = false
         openPanel.beginSheetModalForWindow(self.window!, completionHandler: {v in
             if v == NSModalResponseOK, let path: String = openPanel.URL?.path {
-                self.selectedWatch.value?.directory.value = path.stringByReplacingHomeWithTilde
-                self.dirField.stringValue = path.stringByReplacingHomeWithTilde
-                self.onChange()
+                self.detail.watch.directory.value = path.stringByReplacingHomeWithTilde
             }
         })
     }
@@ -159,92 +208,17 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         }
     }
 
-    var disposeBag = DisposeBag()
-
-    func onChange() {
-        tableView.reloadData()
-        let watch = selectedWatch.value ?? Watch()
-        disposeBag.dispose()
-        watch.name.bidirectionalBindTo(nameField.bnd_text).disposeIn(disposeBag)
-        watch.directory.bidirectionalBindTo(dirField.bnd_text).disposeIn(disposeBag)
-        watch.glob.bidirectionalBindTo(globField.bnd_text).disposeIn(disposeBag)
-        watch.command.bidirectionalBindTo(commandField.bnd_text).disposeIn(disposeBag)
-        watch.pattern.bidirectionalBindTo(patternField.bnd_text).disposeIn(disposeBag)
-        var color = NSColor.textColor()
-        if let preset = model.presetForWatch(watch) {
-            presetField.selectItemWithTitle(preset.name.value)
-            color = NSColor.grayColor()
-        } else {
-            presetField.selectItemAtIndex(0)
-        }
-        globField.textColor = color
-        commandField.textColor = color
-        patternField.textColor = color
-        var isDir: ObjCBool = false
-        if NSFileManager.defaultManager().fileExistsAtPath(dirField.stringValue.stringByExpandingTildeInPath, isDirectory: &isDir) && isDir {
-            dirField.textColor = NSColor.textColor()
-        } else {
-            dirField.textColor = NSColor.redColor()
-        }
-        if !Regex.valid(watch.pattern.value) {
-            patternField.textColor = NSColor.redColor()
-        }
-    }
-
     func tableViewSelectionDidChange(notification: NSNotification) {
         let tableView = notification.object as! NSTableView
         let index = tableView.selectedRow
         if index != -1 {
-            self.selectedWatch.value = model.watches[index]
+            detail.bind(model.watches[index])
         } else {
-            self.selectedWatch.value = nil
+            detail.unbind()
         }
-        onChange()
         self.enabled = index != -1
         if self.enabled {
             nameField.becomeFirstResponder()
-        }
-    }
-
-    override func controlTextDidChange(obj: NSNotification) {
-        guard let watch = selectedWatch.value else { return }
-        guard let field = obj.object as? NSTextField else { return }
-        switch field.identifier! {
-        case "name":
-            watch.name.value = field.stringValue
-        case "directory":
-            watch.directory.value = field.stringValue
-        case "glob":
-            watch.glob.value = field.stringValue
-        case "command":
-            watch.command.value = field.stringValue
-        case "pattern":
-            watch.pattern.value = field.stringValue
-        default:
-            break
-        }
-        onChange()
-    }
-
-    @IBAction func onPreset(sender: AnyObject) {
-        if model.presets.isEmpty {
-            return
-        } else if let watch = selectedWatch.value {
-            if presetField.indexOfSelectedItem == 0 {
-                if let index = model.presets.indexOf({p in p ~= watch}) {
-                    presetField.selectItemAtIndex(index+1)
-                } else {
-                    presetField.selectItemAtIndex(0)
-                }
-                return
-            }
-            let preset = model.presets[presetField.indexOfSelectedItem - 1]
-            // Matches an existing preset, just replace it without notifying.
-            if watch.emptyPreset || model.presetForWatch(watch) != nil {
-                updateWithPreset(preset)
-            } else {
-                confirmPreset(preset)
-            }
         }
     }
 
@@ -257,20 +231,12 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
         alert.alertStyle = .WarningAlertStyle
         alert.beginSheetModalForWindow(window!, completionHandler: {response in
             if response == NSAlertSecondButtonReturn {
-                self.updateWithPreset(preset)
+                self.detail.preset.value = preset
             } else {
+                self.detail.preset.value = nil
                 self.presetField.selectItemAtIndex(0)
             }
         })
-    }
-
-    func updateWithPreset(preset: Preset) {
-        if let watch = selectedWatch.value {
-            watch.glob = preset.glob
-            watch.command = preset.command
-            watch.pattern = preset.pattern
-            onChange()
-        }
     }
 
     // Override enter key so it actually inserts a newline...

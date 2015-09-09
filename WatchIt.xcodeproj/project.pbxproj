@@ -29,6 +29,7 @@
 		70C8C0C71B998DF0003D9B27 /* EonilFileSystemEvents.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		70C8C0C91B998DF5003D9B27 /* XCGLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */; };
 		70C8C0CA1B998DF5003D9B27 /* XCGLogger.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		70E900EE1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E900ED1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +86,7 @@
 		70C8C0C11B998DEA003D9B27 /* Async.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Async.framework; path = Carthage/Build/Mac/Async.framework; sourceTree = "<group>"; };
 		70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EonilFileSystemEvents.framework; path = Carthage/Build/Mac/EonilFileSystemEvents.framework; sourceTree = "<group>"; };
 		70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCGLogger.framework; path = Carthage/Build/Mac/XCGLogger.framework; sourceTree = "<group>"; };
+		70E900ED1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +162,7 @@
 				70C8C0AC1B998CFD003D9B27 /* Model.swift */,
 				702AABE51B9D042B00158C8D /* Watcher.swift */,
 				70C8C0AF1B998CFD003D9B27 /* PreferencesWindow.swift */,
+				70E900ED1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift */,
 				70C8C0B01B998CFD003D9B27 /* PreferencesWindow.xib */,
 				70C8C0B21B998CFD003D9B27 /* WatchIt-Bridging-Header.h */,
 				703E5E491B998B400026036C /* AppDelegate.swift */,
@@ -298,6 +301,7 @@
 				702AABF31B9E767000158C8D /* Regex.swift in Sources */,
 				703E5E4A1B998B400026036C /* AppDelegate.swift in Sources */,
 				702AABF41B9E767000158C8D /* pcrewrapper.c in Sources */,
+				70E900EE1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift in Sources */,
 				70C8C0B31B998CFD003D9B27 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

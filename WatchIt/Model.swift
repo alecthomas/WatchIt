@@ -45,6 +45,14 @@ public class Watch: JSONSerializable {
             "pattern": pattern.value
             ])
     }
+
+    public func reset() {
+        name.value = ""
+        directory.value = ""
+        glob.value = ""
+        command.value = ""
+        pattern.value = ""
+    }
 }
 
 public class Preset: JSONSerializable {
@@ -70,6 +78,10 @@ public class Preset: JSONSerializable {
             "pattern": pattern.value
             ])
     }
+}
+
+func != (a: Preset?, b: Preset?) -> Bool {
+    return a?.name.value != b?.name.value
 }
 
 func ~= (preset: Preset, watch: Watch) -> Bool {
