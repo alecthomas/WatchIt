@@ -90,3 +90,11 @@ public extension ObservableArray where ElementType: ObservableStructure {
         return producer
     }
 }
+
+public func merge<T>(producers: EventProducer<T>...) -> EventProducer<T> {
+    let out = EventProducer<T>()
+    for producer in producers {
+        producer.observeNew({v in out.next(v)})
+    }
+    return out
+}
