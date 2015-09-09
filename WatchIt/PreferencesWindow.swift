@@ -67,6 +67,9 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         patternField.nextKeyView = nameField
 
         // Allow insertion of newlines
+        nameField.delegate = self
+        dirField.delegate = self
+        globField.delegate = self
         commandField.delegate = self
         patternField.delegate = self
 
@@ -77,7 +80,6 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         window?.center()
 
         // Update preset field color when this is set...
-        // It's surprising that Bond doesn't have a way to one-way bind to non-Observables.
         presetTextColor.observeNew({color in
             self.globField.textColor = color
             self.commandField.textColor = color
@@ -219,6 +221,24 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         self.enabled = index != -1
         if self.enabled {
             nameField.becomeFirstResponder()
+        }
+    }
+
+    override func controlTextDidChange(obj: NSNotification) {
+        guard let field = obj.object as? NSTextField else { return }
+        switch field.identifier! {
+        case "name":
+            detail.watch.name.value = field.stringValue
+        case "directory":
+            detail.watch.directory.value = field.stringValue
+        case "glob":
+            detail.watch.glob.value = field.stringValue
+        case "command":
+            detail.watch.command.value = field.stringValue
+        case "pattern":
+            detail.watch.pattern.value = field.stringValue
+        default:
+            break
         }
     }
 
