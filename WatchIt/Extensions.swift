@@ -8,6 +8,7 @@
 
 import Foundation
 import Bond
+import Cocoa
 
 extension String {
     public var stringByExpandingTildeInPath: String {
@@ -33,4 +34,26 @@ public func == <T: Equatable>(a: Observable<T>, b: T) -> Bool {
 
 public func == <T: Equatable>(a: T, b: Observable<T>) -> Bool {
     return a == b.value
+}
+
+
+extension NSView {
+    var enabledSubViews: Bool {
+        get {
+            for view in subviews {
+                if let control = view as? NSControl {
+                    return control.enabled
+                }
+            }
+            return true
+        }
+        set(value) {
+            for view in subviews {
+                if let control = view as? NSControl {
+                    control.enabled = value
+                }
+                view.enabledSubViews = value
+            }
+        }
+    }
 }

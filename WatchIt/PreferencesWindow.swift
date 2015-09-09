@@ -36,6 +36,7 @@ class WatchesTableDataSource: NSObject, NSTableViewDataSource {
 class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDelegate, NSMenuDelegate  {
     var dataSource = WatchesTableDataSource()
 
+    @IBOutlet weak var controlGroup: NSView!
     @IBOutlet weak var nameField: NSTextField!
     @IBOutlet weak var dirField: NSTextField!
     @IBOutlet weak var dirDialog: NSButton!
@@ -151,26 +152,24 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSTextFieldDel
     }
 
     var enabled: Bool {
-        get { return nameField.enabled }
+        get { return controlGroup.enabledSubViews }
         set(enable) {
-            nameField.enabled = enable
-            dirField.enabled = enable
+            controlGroup.enabledSubViews = enable
             presetField.enabled = model.presets.isEmpty ? false : enable
-            globField.enabled = enable
-            commandField.enabled = enable
-            patternField.enabled = enable
-            dirDialog.enabled = enable
         }
     }
+
+    var disposeBag = DisposeBag()
 
     func onChange() {
         tableView.reloadData()
         let watch = selectedWatch.value ?? Watch()
-        watch.name.bindTo(nameField.bnd_text)
-        watch.directory.bindTo(dirField.bnd_text)
-        watch.glob.bindTo(globField.bnd_text)
-        watch.command.bindTo(commandField.bnd_text)
-        watch.pattern.bindTo(patternField.bnd_text)
+        disposeBag.dispose()
+        watch.name.bidirectionalBindTo(nameField.bnd_text).disposeIn(disposeBag)
+        watch.directory.bidirectionalBindTo(dirField.bnd_text).disposeIn(disposeBag)
+        watch.glob.bidirectionalBindTo(globField.bnd_text).disposeIn(disposeBag)
+        watch.command.bidirectionalBindTo(commandField.bnd_text).disposeIn(disposeBag)
+        watch.pattern.bidirectionalBindTo(patternField.bnd_text).disposeIn(disposeBag)
         var color = NSColor.textColor()
         if let preset = model.presetForWatch(watch) {
             presetField.selectItemWithTitle(preset.name.value)
