@@ -7,19 +7,21 @@
 //
 
 import Foundation
+import Cocoa
 import Bond
 
 
 // ViewModel for the preferences window detail view.
-class PreferencesDetailViewModel {
-    var watch = Watch()
+public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
+    public let watch = Watch()
     // Selected preset changed.
-    var preset = Observable<Preset?>(nil)
+    public let preset = Observable<Preset?>(nil)
     // Watch fields that correspond to preset fields.
-    var presetFields: EventProducer<(String, String, String)>
+    public let presetFields: EventProducer<(String, String, String)>
 
-    init() {
+    public override init() {
         presetFields = combineLatest(watch.glob, watch.command, watch.pattern)
+        super.init()
         preset
             .filter({p in p != nil})
             .map({p in p!})
@@ -37,10 +39,11 @@ class PreferencesDetailViewModel {
             })
     }
 
-    private var disposable = DisposeBag()
+    private let disposable = DisposeBag()
 
-    func bind(watch: Watch) {
+    public func bind(watchIndex: Int) {
         disposable.dispose()
+        let watch = model.watches[watchIndex]
         watch.name.bidirectionalBindTo(self.watch.name).disposeIn(disposable)
         watch.directory.bidirectionalBindTo(self.watch.directory).disposeIn(disposable)
         watch.glob.bidirectionalBindTo(self.watch.glob).disposeIn(disposable)
@@ -48,8 +51,45 @@ class PreferencesDetailViewModel {
         watch.pattern.bidirectionalBindTo(self.watch.pattern).disposeIn(disposable)
     }
 
-    func unbind() {
+    public func unbind() {
         disposable.dispose()
         self.watch.reset()
+    }
+
+    public func addWatch() {
+        let watch = Watch()
+        watch.name.value = "Name"
+        model.watches.append(watch)
+    }
+
+    public func removeWatch(index: Int) {
+        model.watches.removeAtIndex(index)
+    }
+
+    public func hasPresets() -> Bool {
+        return !model.presets.isEmpty
+    }
+
+    // NSTableViewDataSource implementation.
+    public func numberOfRowsInTableView(tableView: NSTableView) -> Int {
+        return model.watches.count
+    }
+
+    public func tableView(tableView: NSTableView, objectValueForTableColumn tableColumn: NSTableColumn?, row: Int) -> AnyObject? {
+        switch tableColumn!.identifier {
+        case "name":
+            return model.watches[row].name.value
+        default:
+            return "?"
+        }
+    }
+
+    public func tableView(tableView: NSTableView, setObjectValue object: AnyObject?, forTableColumn tableColumn: NSTableColumn?, row: Int) {
+        switch tableColumn!.identifier {
+        case "name":
+            model.watches[row].name.value = object as! String
+        default:
+            break
+        }
     }
 }

@@ -9,34 +9,7 @@
 import Cocoa
 import Bond
 
-class WatchesTableDataSource: NSObject, NSTableViewDataSource {
-    func numberOfRowsInTableView(tableView: NSTableView) -> Int {
-        return model.watches.count
-    }
-
-    func tableView(tableView: NSTableView, objectValueForTableColumn tableColumn: NSTableColumn?, row: Int) -> AnyObject? {
-        switch tableColumn!.identifier {
-        case "name":
-            return model.watches[row].name.value
-        default:
-            return "?"
-        }
-    }
-
-    func tableView(tableView: NSTableView, setObjectValue object: AnyObject?, forTableColumn tableColumn: NSTableColumn?, row: Int) {
-        switch tableColumn!.identifier {
-        case "name":
-            model.watches[row].name.value = object as! String
-        default:
-            break
-        }
-    }
-}
-
-
 class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate, NSTextFieldDelegate  {
-    var dataSource = WatchesTableDataSource()
-
     @IBOutlet weak var controlGroup: NSView!
     @IBOutlet weak var nameField: NSTextField!
     @IBOutlet weak var dirField: NSTextField!
@@ -55,7 +28,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         super.windowDidLoad()
 
         tableView.setDelegate(self)
-        tableView.setDataSource(dataSource)
+        tableView.setDataSource(detail)
 
         // Tab cycle order.
         window?.initialFirstResponder = nameField
@@ -129,11 +102,12 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         presetField.bnd_controlEvent
             .map({event in (event as! Int) - 1})
             .filter({index in index >= 0})
-            .observeNew({index in
+            .map({index in model.presets[index]})
+            .observeNew({preset in
                 if self.detail.preset.value == nil {
-                    self.confirmPreset(model.presets[index])
+                    self.confirmPreset(preset)
                 } else {
-                    self.detail.preset.value = model.presets[index]
+                    self.detail.preset.value = preset
                 }
             })
     }
@@ -141,7 +115,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
     func updatePresets() {
         let selected = presetField.indexOfSelectedItem
         presetField.removeAllItems()
-        let titles = [""] + model.presets.map({p in p.name.value})
+        let titles = [""] + model.presets.array.map({p in p.name.value})
         presetField.addItemsWithTitles(titles)
         presetField.menu?.delegate = self
         presetField.autoenablesItems = false
@@ -176,14 +150,12 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
     }
 
     @IBAction func onAdd(sender: AnyObject) {
-        let watch = Watch()
-        watch.name.value = "Name"
-        model.watches.append(watch)
+        detail.addWatch()
     }
 
     @IBAction func onRemove(sender: AnyObject) {
         for (offset, row) in tableView.selectedRowIndexes.enumerate() {
-            model.watches.removeAtIndex(row - offset)
+            detail.removeWatch(row - offset)
         }
     }
 
@@ -206,7 +178,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         get { return controlGroup.enabledSubViews }
         set(enable) {
             controlGroup.enabledSubViews = enable
-            presetField.enabled = model.presets.isEmpty ? false : enable
+            presetField.enabled = detail.hasPresets()
         }
     }
 
@@ -214,7 +186,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         let tableView = notification.object as! NSTableView
         let index = tableView.selectedRow
         if index != -1 {
-            detail.bind(model.watches[index])
+            detail.bind(index)
         } else {
             detail.unbind()
         }
