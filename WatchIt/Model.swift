@@ -15,20 +15,29 @@ public protocol JSONSerializable {
     func toJSON() -> JSON
 }
 
-public class Watch: JSONSerializable {
+public class Watch: JSONSerializable, ObservableStructure {
     public var name = Observable<String>("")
     public var directory = Observable<String>("")
     public var glob = Observable<String>("")
     public var command = Observable<String>("")
     public var pattern = Observable<String>("")
 
+    public var propertyChanged = Observable<String>("")
+
     public var emptyPreset: Bool {
         return glob == "" && command == "" && pattern == ""
     }
 
-    public init() {}
+    public init() {
+        name.map({_ in "name"}).bindTo(propertyChanged)
+        directory.map({_ in "directory"}).bindTo(propertyChanged)
+        glob.map({_ in "glob"}).bindTo(propertyChanged)
+        command.map({_ in "command"}).bindTo(propertyChanged)
+        pattern.map({_ in "pattern"}).bindTo(propertyChanged)
+    }
 
-    public required init(json: JSON) throws {
+    public convenience required init(json: JSON) throws {
+        self.init()
         self.name.value = json["name"].stringValue
         self.directory.value = json["directory"].stringValue
         self.glob.value = json["glob"].stringValue
@@ -55,15 +64,23 @@ public class Watch: JSONSerializable {
     }
 }
 
-public class Preset: JSONSerializable {
+public class Preset: JSONSerializable, ObservableStructure {
     public var name = Observable<String>("")
     public var glob = Observable<String>("")
     public var command = Observable<String>("")
     public var pattern = Observable<String>("")
 
-    public init() {}
+    public var propertyChanged = Observable<String>("")
 
-    public required init(json: JSON) throws {
+    public init() {
+        name.map({_ in "name"}).bindTo(propertyChanged)
+        glob.map({_ in "glob"}).bindTo(propertyChanged)
+        command.map({_ in "command"}).bindTo(propertyChanged)
+        pattern.map({_ in "pattern"}).bindTo(propertyChanged)
+    }
+
+    public convenience required init(json: JSON) throws {
+        self.init()
         self.name.value = json["name"].stringValue
         self.glob.value = json["glob"].stringValue
         self.command.value = json["command"].stringValue

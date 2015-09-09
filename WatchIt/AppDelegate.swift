@@ -34,17 +34,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow.showWindow(self)
         updateMenu()
         // Monitor model for changes.
-        model.watches.observeNew({_ in
-            self.save()
-            self.updateMenu()
-        })
-        model.presets.observeNew({_ in
-            self.save()
-            self.updateMenu()
-        })
+        model.watches.observeNew({_ in self.saveAndUpdateMenu()})
+        model.watches.elementChanged.observeNew({_ in self.saveAndUpdateMenu()})
+        model.presets.observeNew({_ in self.saveAndUpdateMenu()})
+        model.presets.elementChanged.observeNew({_ in self.saveAndUpdateMenu()})
     }
 
-    func onWatchesChanged() {
+    func saveAndUpdateMenu() {
         save()
         updateMenu()
     }

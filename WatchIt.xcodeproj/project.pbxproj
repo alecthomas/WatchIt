@@ -13,7 +13,6 @@
 		702AABF31B9E767000158C8D /* Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF01B9E767000158C8D /* Regex.swift */; settings = {ASSET_TAGS = (); }; };
 		702AABF41B9E767000158C8D /* pcrewrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF11B9E767000158C8D /* pcrewrapper.c */; settings = {ASSET_TAGS = (); }; };
 		702AABF61B9E767500158C8D /* Glob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF51B9E767500158C8D /* Glob.swift */; settings = {ASSET_TAGS = (); }; };
-		702AABFA1B9E857400158C8D /* ObservablesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702AABF91B9E857400158C8D /* ObservablesTest.swift */; settings = {ASSET_TAGS = (); }; };
 		702AABFE1B9E91C000158C8D /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */; };
 		702AABFF1B9E91C000158C8D /* SwiftyJSON.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		70388A171B9FB9FB0009BAE1 /* Bond.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70388A161B9FB9FB0009BAE1 /* Bond.framework */; };
@@ -30,6 +29,8 @@
 		70C8C0C91B998DF5003D9B27 /* XCGLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */; };
 		70C8C0CA1B998DF5003D9B27 /* XCGLogger.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		70E900EE1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E900ED1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift */; settings = {ASSET_TAGS = (); }; };
+		70E900F01BA017910052AE5B /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E900EF1BA017910052AE5B /* ModelTests.swift */; settings = {ASSET_TAGS = (); }; };
+		70E900F11BA018760052AE5B /* Bond.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70388A161B9FB9FB0009BAE1 /* Bond.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,7 +68,6 @@
 		702AABF11B9E767000158C8D /* pcrewrapper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcrewrapper.c; path = Regex/pcrewrapper.c; sourceTree = "<group>"; };
 		702AABF21B9E767000158C8D /* pcrewrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcrewrapper.h; path = Regex/pcrewrapper.h; sourceTree = "<group>"; };
 		702AABF51B9E767500158C8D /* Glob.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Glob.swift; sourceTree = "<group>"; };
-		702AABF91B9E857400158C8D /* ObservablesTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservablesTest.swift; sourceTree = "<group>"; };
 		702AABFD1B9E91C000158C8D /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/Mac/SwiftyJSON.framework; sourceTree = "<group>"; };
 		70388A161B9FB9FB0009BAE1 /* Bond.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bond.framework; path = Carthage/Build/Mac/Bond.framework; sourceTree = "<group>"; };
 		703E5E461B998B400026036C /* WatchIt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WatchIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,6 +87,7 @@
 		70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EonilFileSystemEvents.framework; path = Carthage/Build/Mac/EonilFileSystemEvents.framework; sourceTree = "<group>"; };
 		70C8C0C81B998DF5003D9B27 /* XCGLogger.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCGLogger.framework; path = Carthage/Build/Mac/XCGLogger.framework; sourceTree = "<group>"; };
 		70E900ED1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowViewModel.swift; sourceTree = "<group>"; };
+		70E900EF1BA017910052AE5B /* ModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				70E900F11BA018760052AE5B /* Bond.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				702AABED1B9E627000158C8D /* Regex */,
+				703E5E491B998B400026036C /* AppDelegate.swift */,
 				70C8C0AB1B998CFD003D9B27 /* Extensions.swift */,
 				702AABF51B9E767500158C8D /* Glob.swift */,
 				70C8C0AC1B998CFD003D9B27 /* Model.swift */,
@@ -165,7 +168,6 @@
 				70E900ED1B9FFD8E0052AE5B /* PreferencesWindowViewModel.swift */,
 				70C8C0B01B998CFD003D9B27 /* PreferencesWindow.xib */,
 				70C8C0B21B998CFD003D9B27 /* WatchIt-Bridging-Header.h */,
-				703E5E491B998B400026036C /* AppDelegate.swift */,
 				703E5E4B1B998B400026036C /* Assets.xcassets */,
 				703E5E4D1B998B400026036C /* MainMenu.xib */,
 				703E5E501B998B400026036C /* Info.plist */,
@@ -180,7 +182,7 @@
 				703E5E5B1B998B400026036C /* Info.plist */,
 				702AABE91B9D6FA200158C8D /* GlobTests.swift */,
 				702AABEB1B9D778B00158C8D /* RegexTests.swift */,
-				702AABF91B9E857400158C8D /* ObservablesTest.swift */,
+				70E900EF1BA017910052AE5B /* ModelTests.swift */,
 			);
 			path = WatchItTests;
 			sourceTree = "<group>";
@@ -310,9 +312,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				70E900F01BA017910052AE5B /* ModelTests.swift in Sources */,
 				702AABEA1B9D6FA200158C8D /* GlobTests.swift in Sources */,
 				702AABEC1B9D778B00158C8D /* RegexTests.swift in Sources */,
-				702AABFA1B9E857400158C8D /* ObservablesTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,6 +464,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = WatchItTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.swapoff.WatchItTests;
@@ -475,6 +481,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = WatchItTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.swapoff.WatchItTests;

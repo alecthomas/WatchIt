@@ -178,7 +178,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         get { return controlGroup.enabledSubViews }
         set(enable) {
             controlGroup.enabledSubViews = enable
-            presetField.enabled = detail.hasPresets()
+            presetField.enabled = !detail.hasPresets() ? false : enable
         }
     }
 

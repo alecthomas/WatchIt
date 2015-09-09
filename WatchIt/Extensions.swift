@@ -57,3 +57,36 @@ extension NSView {
         }
     }
 }
+
+// An ObservableStructure emits events whenever a property is changed.
+public protocol ObservableStructure {
+    var propertyChanged: Observable<String> { get }
+}
+
+// Extend ObservableArray to provide an elementChanged observable.
+public extension ObservableArray where ElementType: ObservableStructure {
+    public var elementChanged: EventProducer<(Int, String)> {
+        let producer = EventProducer<(Int, String)>()
+        for (i, element) in self.enumerate() {
+            let o = element.propertyChanged
+            o.skip(o.replayLength).map({n in (i, n)}).bindTo(producer)
+        }
+        observeNew({(event: ObservableArrayEvent<[ElementType]>) in
+            switch event.operation {
+            case let .Insert(elements, index):
+                for (i, element) in elements.enumerate() {
+                    let o = element.propertyChanged
+                    o.skip(o.replayLength).map({n in (index + i, n)}).bindTo(producer)
+                }
+            case let .Update(elements, index):
+                for (i, element) in elements.enumerate() {
+                    let o = element.propertyChanged
+                    o.skip(o.replayLength).map({n in (index + i, n)}).bindTo(producer)
+                }
+            default:
+                break
+            }
+        })
+        return producer
+    }
+}
