@@ -10,7 +10,7 @@ import Cocoa
 import AppKit
 import EonilFileSystemEvents
 import XCGLogger
-import Bond
+import RxSwift
 
 let log = XCGLogger()
 var model = Model.deserialize()
@@ -35,14 +35,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesWindow.showWindow(self)
         updateMenu()
         // Monitor model for changes.
-        merge(
-            model.watches.map({_ in ()}),
-            model.watches.elementChanged.map({_ in ()}),
-            model.presets.map({_ in ()}),
-            model.presets.elementChanged.map({_ in ()})
-            )
-            .throttle(0.1, queue: Queue.Main)
-            .observe(saveAndUpdateMenu)
+        sequenceOf(model.watches.anyChange, model.presets.anyChange)
+            .merge()
+            .throttle(0.25, MainScheduler.sharedInstance)
+            .subscribeNext(saveAndUpdateMenu)
+
+        watcher.changes.subscribeNext({changes in
+            print(changes)
+        })
     }
 
     func saveAndUpdateMenu() {

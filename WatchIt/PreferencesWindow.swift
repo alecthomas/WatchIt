@@ -7,7 +7,8 @@
 //
 
 import Cocoa
-import Bond
+import RxSwift
+import RxCocoa
 
 class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate, NSTextFieldDelegate  {
     @IBOutlet weak var controlGroup: NSView!
@@ -22,7 +23,8 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
     @IBOutlet weak var tableView: NSTableView!
 
     var detail = PreferencesDetailViewModel()
-    var presetTextColor = Observable<NSColor>(NSColor.textColor())
+    var presetTextColor = Value<NSColor>(NSColor.textColor())
+    var bag = DisposeBag()
 
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -53,39 +55,44 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         window?.center()
 
         // Update preset field color when this is set...
-        presetTextColor.observeNew({color in
-            self.globField.textColor = color
-            self.commandField.textColor = color
-            self.patternField.textColor = color
-        })
+        presetTextColor
+            .subscribeNext({color in
+                self.globField.textColor = color
+                self.commandField.textColor = color
+                self.patternField.textColor = color
+            })
+            .addDisposableTo(bag)
 
-        model.watches.observeNew(onWatchesChanged)
-        model.presets.observeNew(onPresetsChanged)
+        model.watches.collectionChanged.subscribeNext(onWatchesChanged).addDisposableTo(bag)
+        model.presets.collectionChanged.subscribeNext(onPresetsChanged).addDisposableTo(bag)
 
-        detail.watch.name.bidirectionalBindTo(nameField.bnd_text)
-        detail.watch.directory.bidirectionalBindTo(dirField.bnd_text)
-        detail.watch.glob.bidirectionalBindTo(globField.bnd_text)
-        detail.watch.command.bidirectionalBindTo(commandField.bnd_text)
-        detail.watch.pattern.bidirectionalBindTo(patternField.bnd_text)
+        detail.watch.name.bidirectionalBindTo(nameField).addDisposableTo(bag)
+        detail.watch.directory.bidirectionalBindTo(dirField).addDisposableTo(bag)
+        detail.watch.glob.bidirectionalBindTo(globField).addDisposableTo(bag)
+        detail.watch.command.bidirectionalBindTo(commandField).addDisposableTo(bag)
+        detail.watch.pattern.bidirectionalBindTo(patternField).addDisposableTo(bag)
 
-        nameField.bnd_text
-            .observeNew({_ in
+        nameField.rx_text
+            .subscribeNext({_ in
                 self.tableView.reloadData()
             })
+            .addDisposableTo(bag)
 
-        dirField.bnd_text
-            .observeNew({text in
+        dirField.rx_text
+            .subscribeNext({text in
                 var isDir: ObjCBool = false
-                if NSFileManager.defaultManager().fileExistsAtPath(text.stringByExpandingTildeInPath, isDirectory: &isDir) && isDir {
+                let dir = text.stringByExpandingTildeInPath
+                if dir == "" || (NSFileManager.defaultManager().fileExistsAtPath(dir, isDirectory: &isDir) && isDir) {
                     self.dirField.textColor = NSColor.textColor()
                 } else {
                     self.dirField.textColor = NSColor.redColor()
                 }
             })
+            .addDisposableTo(bag)
 
         // Update preset drop-down when preset fields change.
         detail.presetFields
-            .observeNew({(glob, command, pattern) in
+            .subscribeNext({(glob, command, pattern) in
                 if let preset = model.presetForWatch(self.detail.watch) {
                     self.presetField.selectItemWithTitle(preset.name.value)
                     self.presetTextColor.value = NSColor.grayColor()
@@ -97,25 +104,27 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
                     self.patternField.textColor = NSColor.redColor()
                 }
             })
+            .addDisposableTo(bag)
 
         // Update model when preset changes.
-        presetField.bnd_controlEvent
-            .map({event in (event as! Int) - 1})
-            .filter({index in index >= 0})
-            .map({index in model.presets[index]})
-            .observeNew({preset in
+        presetField.rx_controlEvents
+            .map({self.presetField.indexOfSelectedItem})
+            .filter({i in i > 0})
+            .map({i in model.presets[i - 1]})
+            .subscribeNext({preset in
                 if self.detail.preset.value == nil {
                     self.confirmPreset(preset)
                 } else {
                     self.detail.preset.value = preset
                 }
             })
+            .addDisposableTo(bag)
     }
 
     func updatePresets() {
         let selected = presetField.indexOfSelectedItem
         presetField.removeAllItems()
-        let titles = [""] + model.presets.array.map({p in p.name.value})
+        let titles = [""] + model.presets.map({p in p.name.value})
         presetField.addItemsWithTitles(titles)
         presetField.menu?.delegate = self
         presetField.autoenablesItems = false
@@ -127,21 +136,19 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         }
     }
 
-    func onPresetsChanged(event: ObservableArrayEvent<[Preset]>) {
+    func onPresetsChanged(event: ObservableCollectionEvent<Preset>) {
         updatePresets()
     }
 
-    func onWatchesChanged(event: ObservableArrayEvent<[Watch]>) {
+    func onWatchesChanged(event: ObservableCollectionEvent<Watch>) {
         tableView.reloadData()
-        switch event.operation {
-        case let .Insert(elements, index):
-            tableView.selectRowIndexes(NSIndexSet(index: index + elements.count - 1), byExtendingSelection: false)
-        case let .Remove(range):
+        switch event {
+        case let .Added(range, _):
+            tableView.selectRowIndexes(NSIndexSet(index: range.endIndex), byExtendingSelection: false)
+        case let .Removed(range, _):
             if range.contains(tableView.selectedRow) {
                 tableView.deselectAll(self)
             }
-        default:
-            log.error("watches should be added and removed")
         }
     }
 

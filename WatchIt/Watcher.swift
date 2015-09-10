@@ -8,13 +8,22 @@
 
 import Foundation
 import EonilFileSystemEvents
+import RxSwift
 
 public class Watcher {
     private var model: Model
     private var monitor: FileSystemEventMonitor?
 
+    private let changesPublisher = PublishSubject<[String:[String]]>()
+
+    public let changes: RxSwift.Observable<[String:[String]]>
+
     public init(model: Model) {
+        self.changes = changesPublisher.throttle(1.0, MainScheduler.sharedInstance)
         self.model = model
+        self.model.watches.anyChange
+            .throttle(1.0, MainScheduler.sharedInstance)
+            .subscribeNext(self.update)
         self.update()
     }
 
@@ -30,9 +39,20 @@ public class Watcher {
             )
     }
 
-    func onFSEvents(events:[FileSystemEvent]) {
+    private func onFSEvents(events:[FileSystemEvent]) {
+        var triggered: [String:[String]] = [:]
         for event in events {
-            print(event)
+            for watch in self.model.watches {
+                let dir = watch.directory.value.stringByExpandingTildeInPath.stringByResolvingSymlinksInPath
+                if event.path.hasPrefix(dir) &&  glob(watch.glob.value, path: event.path) {
+                    var paths = triggered[watch.name.value] ?? [String]()
+                    paths.append(event.path)
+                    triggered[watch.name.value] = paths
+                }
+            }
+        }
+        if !triggered.isEmpty {
+            changesPublisher.on(.Next(triggered))
         }
     }
 }

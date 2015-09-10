@@ -8,30 +8,31 @@
 
 import Foundation
 import Cocoa
-import Bond
+import RxSwift
 
 
 // ViewModel for the preferences window detail view.
 public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
     public let watch = Watch()
     // Selected preset changed.
-    public let preset = Observable<Preset?>(nil)
+    public let preset = Value<Preset?>(nil)
     // Watch fields that correspond to preset fields.
-    public let presetFields: EventProducer<(String, String, String)>
+    public let presetFields: Observable<(String, String, String)>
 
     public override init() {
-        presetFields = combineLatest(watch.glob, watch.command, watch.pattern)
+        presetFields = combineLatest(watch.glob.asObservable(), watch.command.asObservable(), watch.pattern.asObservable(), {($0, $1, $2)})
         super.init()
         preset
             .filter({p in p != nil})
             .map({p in p!})
-            .observeNew({preset in
+            .subscribeNext({preset in
                 self.watch.glob.value = preset.glob.value
                 self.watch.command.value = preset.command.value
                 self.watch.pattern.value = preset.pattern.value
             })
         presetFields
-            .observeNew({(glob, command, pattern) in
+            .throttle(0.1, MainScheduler.sharedInstance)
+            .subscribeNext({(glob, command, pattern) in
                 let selected = model.presetForWatch(self.watch)
                 if self.preset.value != selected {
                     self.preset.value = selected
@@ -39,20 +40,21 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
             })
     }
 
-    private let disposable = DisposeBag()
+    private var bag = DisposeBag()
 
+    // Bind to the nth watch.
     public func bind(watchIndex: Int) {
-        disposable.dispose()
+        bag = DisposeBag()
         let watch = model.watches[watchIndex]
-        watch.name.bidirectionalBindTo(self.watch.name).disposeIn(disposable)
-        watch.directory.bidirectionalBindTo(self.watch.directory).disposeIn(disposable)
-        watch.glob.bidirectionalBindTo(self.watch.glob).disposeIn(disposable)
-        watch.command.bidirectionalBindTo(self.watch.command).disposeIn(disposable)
-        watch.pattern.bidirectionalBindTo(self.watch.pattern).disposeIn(disposable)
+        watch.name.bidirectionalBindTo(self.watch.name).addDisposableTo(bag)
+        watch.directory.bidirectionalBindTo(self.watch.directory).addDisposableTo(bag)
+        watch.glob.bidirectionalBindTo(self.watch.glob).addDisposableTo(bag)
+        watch.command.bidirectionalBindTo(self.watch.command).addDisposableTo(bag)
+        watch.pattern.bidirectionalBindTo(self.watch.pattern).addDisposableTo(bag)
     }
 
     public func unbind() {
-        disposable.dispose()
+        bag = DisposeBag()
         self.watch.reset()
     }
 

@@ -8,7 +8,7 @@
 
 import Foundation
 import SwiftyJSON
-import Bond
+import RxSwift
 
 public protocol JSONSerializable {
     init(json: JSON) throws
@@ -16,24 +16,26 @@ public protocol JSONSerializable {
 }
 
 public class Watch: JSONSerializable, ObservableStructure {
-    public var name = Observable<String>("")
-    public var directory = Observable<String>("")
-    public var glob = Observable<String>("")
-    public var command = Observable<String>("")
-    public var pattern = Observable<String>("")
+    public var name = Value<String>("")
+    public var directory = Value<String>("")
+    public var glob = Value<String>("")
+    public var command = Value<String>("")
+    public var pattern = Value<String>("")
 
-    public var propertyChanged = Observable<String>("")
+    private let propertyChangedPublisher = PublishSubject<String>()
+    public let propertyChanged: Observable<String>
 
     public var emptyPreset: Bool {
         return glob == "" && command == "" && pattern == ""
     }
 
     public init() {
-        name.map({_ in "name"}).bindTo(propertyChanged)
-        directory.map({_ in "directory"}).bindTo(propertyChanged)
-        glob.map({_ in "glob"}).bindTo(propertyChanged)
-        command.map({_ in "command"}).bindTo(propertyChanged)
-        pattern.map({_ in "pattern"}).bindTo(propertyChanged)
+        propertyChanged = propertyChangedPublisher
+        name.map({_ in "name"}).subscribe(propertyChangedPublisher)
+        directory.map({_ in "directory"}).subscribe(propertyChangedPublisher)
+        glob.map({_ in "glob"}).subscribe(propertyChangedPublisher)
+        command.map({_ in "command"}).subscribe(propertyChangedPublisher)
+        pattern.map({_ in "pattern"}).subscribe(propertyChangedPublisher)
     }
 
     public convenience required init(json: JSON) throws {
@@ -65,18 +67,20 @@ public class Watch: JSONSerializable, ObservableStructure {
 }
 
 public class Preset: JSONSerializable, ObservableStructure {
-    public var name = Observable<String>("")
-    public var glob = Observable<String>("")
-    public var command = Observable<String>("")
-    public var pattern = Observable<String>("")
+    public var name = Value<String>("")
+    public var glob = Value<String>("")
+    public var command = Value<String>("")
+    public var pattern = Value<String>("")
 
-    public var propertyChanged = Observable<String>("")
+    public let propertyChangedPublisher = PublishSubject<String>()
+    public let propertyChanged: Observable<String>
 
     public init() {
-        name.map({_ in "name"}).bindTo(propertyChanged)
-        glob.map({_ in "glob"}).bindTo(propertyChanged)
-        command.map({_ in "command"}).bindTo(propertyChanged)
-        pattern.map({_ in "pattern"}).bindTo(propertyChanged)
+        propertyChanged = propertyChangedPublisher
+        name.map({_ in "name"}).subscribe(propertyChangedPublisher)
+        glob.map({_ in "glob"}).subscribe(propertyChangedPublisher)
+        command.map({_ in "command"}).subscribe(propertyChangedPublisher)
+        pattern.map({_ in "pattern"}).subscribe(propertyChangedPublisher)
     }
 
     public convenience required init(json: JSON) throws {
@@ -117,8 +121,8 @@ var modelPath = modelDirectory.stringByAppendingPathComponent("WatchIt.json")
 
 
 public class Model: JSONSerializable {
-    public var watches = ObservableArray<Watch>([])
-    public var presets = ObservableArray<Preset>([])
+    public var watches = ObservableCollection<Watch>()
+    public var presets = ObservableCollection<Preset>()
 
     public func presetForWatch(watch: Watch) -> Preset? {
         return presets.filter({p in p ~= watch}).first
@@ -127,14 +131,14 @@ public class Model: JSONSerializable {
     public init() {}
 
     public required init(json: JSON) throws {
-        watches.array.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
-        presets.array.appendContentsOf(try json["presets"].arrayValue.map({v in try Preset(json: v)}))
+        watches.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
+        presets.appendContentsOf(try json["presets"].arrayValue.map({v in try Preset(json: v)}))
     }
 
     public func toJSON() -> JSON {
         return JSON([
-            "watches": JSON(watches.array.map({v in v.toJSON()})),
-            "presets": JSON(presets.array.map({v in v.toJSON()})),
+            "watches": JSON(watches.map({v in v.toJSON()})),
+            "presets": JSON(presets.map({v in v.toJSON()})),
             ])
     }
 

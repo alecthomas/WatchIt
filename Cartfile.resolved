@@ -1,4 +1,4 @@
-github "SwiftBond/Bond" "v4.0.0-beta3"
 github "alecthomas/FileSystemEvents" "9c0f5754a6dfc4f2f2c41738cf067ca93034978f"
+github "ReactiveX/RxSwift" "2.0-alpha.1"
 github "SwiftyJSON/SwiftyJSON" "d4df13c66146a8e9c8d96c852746a08363003d36"
-github "DaveWoodCom/XCGLogger" "9a317df3c037d89be06b0546f76c43d7b120660d"
+github "DaveWoodCom/XCGLogger" "ef13e8fb1c5c8b155c8a96af2a397270f2812c9c"

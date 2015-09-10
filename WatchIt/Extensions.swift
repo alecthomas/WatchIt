@@ -7,12 +7,16 @@
 //
 
 import Foundation
-import Bond
+import RxSwift
 import Cocoa
 
 extension String {
     public var stringByExpandingTildeInPath: String {
         return (self as NSString).stringByExpandingTildeInPath
+    }
+
+    public var stringByResolvingSymlinksInPath: String {
+        return (self as NSString).stringByResolvingSymlinksInPath
     }
 
     public var stringByReplacingHomeWithTilde: String {
@@ -24,15 +28,15 @@ extension String {
     }
 }
 
-public func == <T: Equatable>(a: Observable<T>, b: Observable<T>) -> Bool {
+public func == <T: Equatable>(a: Value<T>, b: Value<T>) -> Bool {
     return a.value == b.value
 }
 
-public func == <T: Equatable>(a: Observable<T>, b: T) -> Bool {
+public func == <T: Equatable>(a: Value<T>, b: T) -> Bool {
     return a.value == b
 }
 
-public func == <T: Equatable>(a: T, b: Observable<T>) -> Bool {
+public func == <T: Equatable>(a: T, b: Value<T>) -> Bool {
     return a == b.value
 }
 
@@ -56,45 +60,4 @@ extension NSView {
             }
         }
     }
-}
-
-// An ObservableStructure emits events whenever a property is changed.
-public protocol ObservableStructure {
-    var propertyChanged: Observable<String> { get }
-}
-
-// Extend ObservableArray to provide an elementChanged observable.
-public extension ObservableArray where ElementType: ObservableStructure {
-    public var elementChanged: EventProducer<(Int, String)> {
-        let producer = EventProducer<(Int, String)>()
-        for (i, element) in self.enumerate() {
-            let o = element.propertyChanged
-            o.skip(o.replayLength).map({n in (i, n)}).bindTo(producer)
-        }
-        observeNew({(event: ObservableArrayEvent<[ElementType]>) in
-            switch event.operation {
-            case let .Insert(elements, index):
-                for (i, element) in elements.enumerate() {
-                    let o = element.propertyChanged
-                    o.skip(o.replayLength).map({n in (index + i, n)}).bindTo(producer)
-                }
-            case let .Update(elements, index):
-                for (i, element) in elements.enumerate() {
-                    let o = element.propertyChanged
-                    o.skip(o.replayLength).map({n in (index + i, n)}).bindTo(producer)
-                }
-            default:
-                break
-            }
-        })
-        return producer
-    }
-}
-
-public func merge<T>(producers: EventProducer<T>...) -> EventProducer<T> {
-    let out = EventProducer<T>()
-    for producer in producers {
-        producer.observeNew({v in out.next(v)})
-    }
-    return out
 }

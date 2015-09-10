@@ -6,7 +6,6 @@
 //  Copyright © 2015 SwapOff. All rights reserved.
 //
 
-import Bond
 import XCTest
 @testable import WatchIt
 
@@ -14,7 +13,7 @@ class ModelTests: XCTestCase {
     func testWatchPropertyChanged() {
         let watch = Watch()
         var properties: [String] = []
-        watch.propertyChanged.observeNew({n in properties.append(n)})
+        watch.propertyChanged.subscribeNext({n in properties.append(n)})
         watch.name.value = ""
         watch.command.value = ""
         watch.directory.value = ""
@@ -26,7 +25,7 @@ class ModelTests: XCTestCase {
     func testPresetPropertyChanged() {
         let preset = Preset()
         var properties: [String] = []
-        preset.propertyChanged.observeNew({n in properties.append(n)})
+        preset.propertyChanged.subscribeNext({n in properties.append(n)})
         preset.name.value = ""
         preset.command.value = ""
         preset.glob.value = ""
@@ -37,7 +36,7 @@ class ModelTests: XCTestCase {
     func testElementChanged() {
         let watches = ObservableArray<Watch>([])
         var actual: [(Int, String)] = []
-        watches.elementChanged.observeNew({i in actual.append(i)})
+        watches.elementChanged.subscribeNext({i in actual.append(i)})
         let a = Watch()
         let b = Watch()
         watches.append(a)

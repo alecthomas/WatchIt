@@ -8,7 +8,7 @@
 //
 
 import Foundation
-#if os(iOS)
+#if os(iOS) || os(watchOS)
     import UIKit
 #else
     import AppKit
@@ -204,7 +204,7 @@ public class XCGNSLogDestination: XCGBaseLogDestination {
             adjustedText = text
         }
 
-        NSLog(adjustedText)
+        NSLog("%@", adjustedText)
     }
 }
 
@@ -291,7 +291,7 @@ public class XCGLogger: CustomDebugStringConvertible {
         public static let nslogDestinationIdentifier = "com.cerebralgardens.xcglogger.logdestination.console.nslog"
         public static let baseFileLogDestinationIdentifier = "com.cerebralgardens.xcglogger.logdestination.file"
         public static let nsdataFormatterCacheIdentifier = "com.cerebralgardens.xcglogger.nsdataFormatterCache"
-        public static let versionString = "3.0b3"
+        public static let versionString = "3.0"
     }
 
     // MARK: - Enums
@@ -363,7 +363,7 @@ public class XCGLogger: CustomDebugStringConvertible {
             self.bg = bg
         }
 
-#if os(iOS)
+#if os(iOS) || os(watchOS)
         public init(fg: UIColor, bg: UIColor? = nil) {
             var redComponent: CGFloat = 0
             var greenComponent: CGFloat = 0
