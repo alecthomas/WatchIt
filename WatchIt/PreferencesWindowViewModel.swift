@@ -20,7 +20,7 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
     public let presetFields: Observable<(String, String, String)>
 
     public override init() {
-        presetFields = combineLatest(watch.glob.asObservable(), watch.command.asObservable(), watch.pattern.asObservable(), {($0, $1, $2)})
+        presetFields = combineLatest(watch.glob.asObservable(), watch.command.asObservable(), watch.pattern.asObservable(), {($0, $1, $2)}).throttle(0.01, MainScheduler.sharedInstance)
         super.init()
         preset
             .filter({p in p != nil})
@@ -31,7 +31,6 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
                 self.watch.pattern.value = preset.pattern.value
             })
         presetFields
-            .throttle(0.1, MainScheduler.sharedInstance)
             .subscribeNext({(glob, command, pattern) in
                 let selected = model.presetForWatch(self.watch)
                 if self.preset.value != selected {
@@ -46,11 +45,11 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
     public func bind(watchIndex: Int) {
         bag = DisposeBag()
         let watch = model.watches[watchIndex]
-        watch.name.bidirectionalBindTo(self.watch.name).addDisposableTo(bag)
-        watch.directory.bidirectionalBindTo(self.watch.directory).addDisposableTo(bag)
-        watch.glob.bidirectionalBindTo(self.watch.glob).addDisposableTo(bag)
-        watch.command.bidirectionalBindTo(self.watch.command).addDisposableTo(bag)
-        watch.pattern.bidirectionalBindTo(self.watch.pattern).addDisposableTo(bag)
+        bidirectionalBindTo(watch.name, self.watch.name).addDisposableTo(bag)
+        bidirectionalBindTo(watch.directory, self.watch.directory).addDisposableTo(bag)
+        bidirectionalBindTo(watch.glob, self.watch.glob).addDisposableTo(bag)
+        bidirectionalBindTo(watch.command, self.watch.command).addDisposableTo(bag)
+        bidirectionalBindTo(watch.pattern, self.watch.pattern).addDisposableTo(bag)
     }
 
     public func unbind() {

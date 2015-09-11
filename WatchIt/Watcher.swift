@@ -10,6 +10,7 @@ import Foundation
 import EonilFileSystemEvents
 import RxSwift
 
+// Monitors Watched directories for matching changes.
 public class Watcher {
     private var model: Model
     private var monitor: FileSystemEventMonitor?
@@ -28,7 +29,7 @@ public class Watcher {
     }
 
     public func update() {
-        let paths: [String] = self.model.watches.map({w in w.directory.value.stringByExpandingTildeInPath})
+        let paths: [String] = self.model.watches.filter({$0.valid()}).map({$0.realPath})
         log.info("Watching \(paths)")
         self.monitor = FileSystemEventMonitor(
             pathsToWatch: paths,
@@ -43,8 +44,7 @@ public class Watcher {
         var triggered: [String:[String]] = [:]
         for event in events {
             for watch in self.model.watches {
-                let dir = watch.directory.value.stringByExpandingTildeInPath.stringByResolvingSymlinksInPath
-                if event.path.hasPrefix(dir) &&  glob(watch.glob.value, path: event.path) {
+                if event.path.hasPrefix(watch.realPath) &&  glob(watch.glob.value, path: event.path) {
                     var paths = triggered[watch.name.value] ?? [String]()
                     paths.append(event.path)
                     triggered[watch.name.value] = paths

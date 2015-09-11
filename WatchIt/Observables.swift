@@ -33,16 +33,25 @@ public func  == <T: Equatable>(a: ObservableCollectionEvent<T>, b: ObservableCol
 // Extend ObservableCollection to allow observation of element changes
 // iff the Element is an ObservableStructure.
 public extension ObservableCollection where Element: ObservableStructure {
-    public var elementChanged: Observable<(Int, String)> {
-        let publisher = PublishSubject<(Int, String)>()
-        for (i, element) in self.enumerate() {
-            element.propertyChanged.map({n in (i, n)}).subscribe(publisher)
+    public var elementChanged: Observable<(Element, String)> {
+        let publisher = PublishSubject<(Element, String)>()
+        for element in self {
+            element.propertyChanged.map({n in (element, n)}).subscribe(publisher)
         }
         return publisher
     }
 
     public var anyChange: Observable<Void> {
-        return sequenceOf(elementChanged.map({_ in ()}), collectionChanged.map({_ in ()})).merge()
+        return sequenceOf(
+            // Check changed elements for validity.
+            elementChanged
+                .map({(i, _) in
+                    return true
+                })
+                .filter({$0})
+                .map({_ in ()}),
+            collectionChanged.map({_ in ()})
+            ).merge()
     }
 }
 

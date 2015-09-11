@@ -25,8 +25,13 @@ public class Watch: JSONSerializable, ObservableStructure {
     private let propertyChangedPublisher = PublishSubject<String>()
     public let propertyChanged: Observable<String>
 
+    // Are the preset values in this watch empty?
     public var emptyPreset: Bool {
         return glob == "" && command == "" && pattern == ""
+    }
+
+    public var realPath: String {
+        return directory.value.stringByExpandingTildeInPath.stringByResolvingSymlinksInPath
     }
 
     public init() {
@@ -45,6 +50,15 @@ public class Watch: JSONSerializable, ObservableStructure {
         self.glob.value = json["glob"].stringValue
         self.command.value = json["command"].stringValue
         self.pattern.value = json["pattern"].stringValue
+    }
+
+    public func validPath() -> Bool {
+        var isDir: ObjCBool = false
+        return NSFileManager.defaultManager().fileExistsAtPath(realPath, isDirectory: &isDir) && isDir
+    }
+
+    public func valid() -> Bool {
+        return validPath() && glob.value != "" && command.value != "" && Regex.valid(pattern.value)
     }
 
     public func toJSON() -> JSON {
@@ -124,15 +138,15 @@ public class Model: JSONSerializable {
     public var watches = ObservableCollection<Watch>()
     public var presets = ObservableCollection<Preset>()
 
-    public func presetForWatch(watch: Watch) -> Preset? {
-        return presets.filter({p in p ~= watch}).first
-    }
-
     public init() {}
 
     public required init(json: JSON) throws {
         watches.appendContentsOf(try json["watches"].arrayValue.map({v in try Watch(json: v)}))
         presets.appendContentsOf(try json["presets"].arrayValue.map({v in try Preset(json: v)}))
+    }
+
+    public func presetForWatch(watch: Watch) -> Preset? {
+        return presets.filter({p in p ~= watch}).first
     }
 
     public func toJSON() -> JSON {

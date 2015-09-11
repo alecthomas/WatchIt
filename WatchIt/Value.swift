@@ -39,41 +39,27 @@ public class Value<E>: SubjectType {
 
     public func bidirectionalBindTo(field: NSTextField) -> Disposable {
         let disposable = CompositeDisposable()
-        field.stringValue = value as! String
+        let s = value as! String
+        field.stringValue = s
+        field.rx_text.on(.Next(s))
         var setting = false
         disposable.addDisposable(subscribeNext({v in
             if !setting {
                 setting = true
-                field.stringValue = v as! String
-                field.rx_text.on(.Next(v as! String))
+                let s = v as! String
+                if field.stringValue != s {
+                    field.stringValue = s
+                    field.rx_text.on(.Next(s))
+                }
                 setting = false
             }
         }))
         disposable.addDisposable(field.rx_text.subscribeNext({v in
             if !setting {
                 setting = true
-                self.value = v as! E
-                setting = false
-            }
-        }))
-        return disposable
-    }
-
-    public func bidirectionalBindTo(other: Value<E>) -> Disposable {
-        let disposable = CompositeDisposable()
-        var setting = false
-        other.value = value
-        disposable.addDisposable(other.subscribeNext({v in
-            if !setting {
-                setting = true
-                self.value = v
-                setting = false
-            }
-        }))
-        disposable.addDisposable(subscribeNext({v in
-            if !setting {
-                setting = true
-                other.value = v
+                if self.value as! String != v {
+                    self.value = v as! E
+                }
                 setting = false
             }
         }))
@@ -96,4 +82,29 @@ public class Value<E>: SubjectType {
     deinit {
         self.subject.on(.Completed)
     }
+}
+
+public func bidirectionalBindTo<E: Equatable>(a: Value<E>, _ b: Value<E>) -> Disposable {
+    let disposable = CompositeDisposable()
+    var setting = false
+    b.value = a.value
+    disposable.addDisposable(b.subscribeNext({v in
+        if !setting {
+            setting = true
+            if !(a == v) {
+                a.value = v
+            }
+            setting = false
+        }
+    }))
+    disposable.addDisposable(a.subscribeNext({v in
+        if !setting {
+            setting = true
+            if !(b == v) {
+                b.value = v
+            }
+            setting = false
+        }
+    }))
+    return disposable
 }

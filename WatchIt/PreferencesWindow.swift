@@ -72,21 +72,20 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         detail.watch.command.bidirectionalBindTo(commandField).addDisposableTo(bag)
         detail.watch.pattern.bidirectionalBindTo(patternField).addDisposableTo(bag)
 
-        nameField.rx_text
+        detail.watch.name
             .subscribeNext({_ in
                 self.tableView.reloadData()
             })
             .addDisposableTo(bag)
 
-        dirField.rx_text
+        detail.watch.directory
             .subscribeNext({text in
-                var isDir: ObjCBool = false
-                let dir = text.stringByExpandingTildeInPath
-                if dir == "" || (NSFileManager.defaultManager().fileExistsAtPath(dir, isDirectory: &isDir) && isDir) {
+                if self.detail.watch.validPath() {
                     self.dirField.textColor = NSColor.textColor()
                 } else {
                     self.dirField.textColor = NSColor.redColor()
                 }
+                self.tableView.reloadData()
             })
             .addDisposableTo(bag)
 
@@ -103,6 +102,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
                 if !Regex.valid(pattern) {
                     self.patternField.textColor = NSColor.redColor()
                 }
+                self.tableView.reloadData()
             })
             .addDisposableTo(bag)
 
@@ -203,24 +203,6 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         }
     }
 
-    override func controlTextDidChange(obj: NSNotification) {
-        guard let field = obj.object as? NSTextField else { return }
-        switch field.identifier! {
-        case "name":
-            detail.watch.name.value = field.stringValue
-        case "directory":
-            detail.watch.directory.value = field.stringValue
-        case "glob":
-            detail.watch.glob.value = field.stringValue
-        case "command":
-            detail.watch.command.value = field.stringValue
-        case "pattern":
-            detail.watch.pattern.value = field.stringValue
-        default:
-            break
-        }
-    }
-
     func confirmPreset(preset: Preset) {
         let alert = NSAlert()
         alert.addButtonWithTitle("Cancel")
@@ -236,6 +218,12 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
                 self.presetField.selectItemAtIndex(0)
             }
         })
+    }
+
+    func tableView(tableView: NSTableView, willDisplayCell cell: AnyObject, forTableColumn tableColumn: NSTableColumn?, row: Int) {
+        let tcell = cell as! NSTextFieldCell
+        let watch = model.watches[row]
+        tcell.textColor = watch.valid() ? NSColor.textColor() : NSColor.redColor()
     }
 
     // Override enter key so it actually inserts a newline...
