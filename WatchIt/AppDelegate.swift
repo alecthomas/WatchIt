@@ -23,26 +23,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var statusItem: NSStatusItem = NSStatusBar.systemStatusBar().statusItemWithLength(-1)
     var watcher = Watcher(model: model)
+    var runner: Runner
 
     @IBOutlet weak var menu: NSMenu!
     @IBOutlet weak var watchesMenu: NSMenu!
+
+    override init() {
+        runner = Runner(changes: watcher.changes)
+        super.init()
+    }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         let icon = NSImage(named: "eye-icon")
         icon?.template = true
         statusItem.image = icon
         statusItem.menu = menu
-        preferencesWindow.showWindow(self)
+//        preferencesWindow.showWindow(self)
         updateMenu()
         // Monitor model for changes.
         sequenceOf(model.watches.anyChange, model.presets.anyChange)
             .merge()
             .throttle(0.25, MainScheduler.sharedInstance)
             .subscribeNext(saveAndUpdateMenu)
-
-        watcher.changes.subscribeNext({changes in
-            print(changes)
-        })
     }
 
     func saveAndUpdateMenu() {

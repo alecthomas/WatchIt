@@ -14,26 +14,53 @@ import RxSwift
 public class Watcher {
     private var model: Model
     private var monitor: FileSystemEventMonitor?
+    private var watches: [Watch] = []
 
-    private let changesPublisher = PublishSubject<[String:[String]]>()
+    private let changesPublisher = PublishSubject<Watch>()
 
-    public let changes: RxSwift.Observable<[String:[String]]>
+    public let changes: Observable<Watch>
 
     public init(model: Model) {
-        self.changes = changesPublisher.throttle(1.0, MainScheduler.sharedInstance)
+        self.changes = changesPublisher
+            .throttle(1.0, MainScheduler.sharedInstance)
         self.model = model
+
+        // Trigger changes when the collection changes.
+        // Invalid watches are ignored.
+        sequenceOf(
+            // Trigger whenever an existing field is changed (ignoring .name)
+            self.model.watches.elementChanged
+                .filter({(_, f) in f != "name"})
+                .map({(w, _) in w}),
+            // Trigger whenever new watches are added.
+            self.model.watches.collectionChanged
+                .map({event -> [Watch] in
+                    if case let .Added(_, elements) = event {
+                        return elements
+                    }
+                    return []
+                })
+                .flatMap({elements in elements.asObservable()})
+            )
+            .merge()
+            .filter({w in w.valid()})
+            .bindTo(changesPublisher)
+
+        // Update the file system monitor when the collection changes.
         self.model.watches.anyChange
             .throttle(1.0, MainScheduler.sharedInstance)
-            .subscribeNext(self.update)
-        self.update()
+            .subscribeNext(self.onModelChange)
+
+        self.onModelChange()
     }
 
-    public func update() {
-        let paths: [String] = self.model.watches.filter({$0.valid()}).map({$0.realPath})
+    public func onModelChange() {
+        watches = self.model.watches.filter({$0.valid()})
+        let paths: [String] = watches.map({$0.realPath})
         log.info("Watching \(paths)")
         self.monitor = FileSystemEventMonitor(
             pathsToWatch: paths,
-            latency: 5,
+            latency: 1,
             watchRoot: true,
             queue: dispatch_get_main_queue(),
             callback: self.onFSEvents
@@ -41,18 +68,13 @@ public class Watcher {
     }
 
     private func onFSEvents(events:[FileSystemEvent]) {
-        var triggered: [String:[String]] = [:]
-        for event in events {
-            for watch in self.model.watches {
+        for watch in watches {
+            for event in events {
                 if event.path.hasPrefix(watch.realPath) &&  glob(watch.glob.value, path: event.path) {
-                    var paths = triggered[watch.name.value] ?? [String]()
-                    paths.append(event.path)
-                    triggered[watch.name.value] = paths
+                    changesPublisher.on(.Next(watch))
+                    break
                 }
             }
-        }
-        if !triggered.isEmpty {
-            changesPublisher.on(.Next(triggered))
         }
     }
 }

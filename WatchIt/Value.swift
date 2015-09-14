@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 import Cocoa
 
-public class Value<E>: SubjectType {
+public class Value<E>: SubjectType, CustomStringConvertible {
     let subject: BehaviorSubject<E>
 
     private var value_: E
@@ -30,6 +30,10 @@ public class Value<E>: SubjectType {
     }
 
     private var lock = NSLock()
+
+    public var description: String {
+        return "\(value)"
+    }
 
     public init(_ value: E) {
         self.value_ = value

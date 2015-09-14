@@ -8,13 +8,15 @@
 
 import Foundation
 import XCTest
+import RxSwift
+import RxBlocking
 @testable import WatchIt
 
 class ObservableTests: XCTestCase {
     func testObservableCollection() {
         let collection = ObservableCollection<Int>()
         var actual: [ObservableCollectionEvent<Int>] = []
-        collection.collectionChanged += {e in actual.append(e)}
+        collection.collectionChanged.subscribeNext({e in actual.append(e)})
         collection.append(1)
         collection.append(2)
         collection.insert(0, atIndex: 0)
@@ -27,5 +29,12 @@ class ObservableTests: XCTestCase {
         XCTAssertTrue(ObservableCollectionEvent.Removed(range: zeroRange, elements: [0]) == actual[3])
         XCTAssertTrue(ObservableCollectionEvent.Added(range: zeroRange, elements: [3]) == actual[4])
         XCTAssertTrue(ObservableCollectionEvent.Removed(range: zeroRange, elements: [3]) == actual[5])
+    }
+
+    func testObservableFlatten() {
+        let a = try! [[1, 2, 3, 4]].asObservable().toArray()
+        XCTAssertEqual([[1, 2, 3, 4]], a)
+        let b = try! [[1, 2, 3, 4]].asObservable().flatMap({e in e.asObservable()}).toArray()
+        XCTAssertEqual([1, 2, 3, 4], b)
     }
 }

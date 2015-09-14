@@ -71,6 +71,7 @@ class RegexTests: XCTestCase {
         let re = try! Regex(pattern: "(\\d+)")
         XCTAssertEqual("abc(123)def456", try! re.replace("abc123def456", with: "(\\1)", count: 1))
     }
+
     func testFindAll() {
         let re = try! Regex(pattern: "(\\d+)|(\\D+)")
         let matches = try! re.findAll("abc123def456")
@@ -79,5 +80,27 @@ class RegexTests: XCTestCase {
         XCTAssertEqual(matches[1][0], "123")
         XCTAssertEqual(matches[2][0], "def")
         XCTAssertEqual(matches[3][0], "456")
+    }
+
+    func testFindAllMultiline() {
+        let text =  "        Location:            parser_test.go:23\n" +
+                    "        Error:               Expected not to be nil.\n" +
+                    "        Messages:            An error is expected but got nil.\n" +
+                    "\n" +
+                    "        Location:            parser_test.go:24\n" +
+                    "        Error:               Not equal: \"ello\" (expected)\n" +
+                    "                             != \"hello\" (actual)\n"
+
+        let re = try! Regex(pattern: "Location:\\s+(?<path>[^:]+):(?<line>\\d+)$\\s+Error:\\s+(?<message>[^\\n]+)", options: RegexOptions.MULTILINE)
+        let matches = try! re.findAll(text)
+        XCTAssertEqual(matches.count, 2)
+
+        XCTAssertEqual(matches[0]["path"], "parser_test.go")
+        XCTAssertEqual(matches[0]["line"], "23")
+        XCTAssertEqual(matches[0]["message"], "Expected not to be nil.")
+
+        XCTAssertEqual(matches[1]["path"], "parser_test.go")
+        XCTAssertEqual(matches[1]["line"], "24")
+        XCTAssertEqual(matches[1]["message"], "Not equal: \"ello\" (expected)")
     }
 }

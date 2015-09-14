@@ -15,7 +15,7 @@ public protocol JSONSerializable {
     func toJSON() -> JSON
 }
 
-public class Watch: JSONSerializable, ObservableStructure {
+public class Watch: JSONSerializable, ObservableStructure, CustomStringConvertible {
     public var name = Value<String>("")
     public var directory = Value<String>("")
     public var glob = Value<String>("")
@@ -32,6 +32,10 @@ public class Watch: JSONSerializable, ObservableStructure {
 
     public var realPath: String {
         return directory.value.stringByExpandingTildeInPath.stringByResolvingSymlinksInPath
+    }
+
+    public var description: String {
+        return "Watch(name: '\(name)', directory: '\(directory)', glob: '\(glob)', command: '\(command)', pattern: '\(pattern)')"
     }
 
     public init() {

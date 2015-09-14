@@ -1,4 +1,4 @@
 github "alecthomas/FileSystemEvents" "master"
 github "DaveWoodCom/XCGLogger" "swift_2.0"
 github "SwiftyJSON/SwiftyJSON" "xcode7"
-github "ReactiveX/RxSwift" "2.0-alpha.1"
+github "ReactiveX/RxSwift" "develop"

@@ -33,19 +33,19 @@ class ModelTests: XCTestCase {
         XCTAssertEqual(properties, ["name", "command", "glob", "pattern"])
     }
 
-    func testElementChanged() {
-        let watches = ObservableArray<Watch>([])
-        var actual: [(Int, String)] = []
-        watches.elementChanged.subscribeNext({i in actual.append(i)})
-        let a = Watch()
-        let b = Watch()
-        watches.append(a)
-        watches.append(b)
-        a.name.value = "aname"
-        b.name.value = "bname"
-        a.command.value = "acommand"
-        b.command.value = "bname"
-        let expected  = ["0.name", "1.name", "0.command", "1.command"]
-        XCTAssertEqual(actual.map({(i, n) in "\(i).\(n)"}), expected)
-    }
+//    func testElementChanged() {
+//        let watches = ObservableArray<Watch>([])
+//        var actual: [(Int, String)] = []
+//        watches.elementChanged.subscribeNext({i in actual.append(i)})
+//        let a = Watch()
+//        let b = Watch()
+//        watches.append(a)
+//        watches.append(b)
+//        a.name.value = "aname"
+//        b.name.value = "bname"
+//        a.command.value = "acommand"
+//        b.command.value = "bname"
+//        let expected  = ["0.name", "1.name", "0.command", "1.command"]
+//        XCTAssertEqual(actual.map({(i, n) in "\(i).\(n)"}), expected)
+//    }
 }

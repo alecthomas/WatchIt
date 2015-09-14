@@ -61,3 +61,27 @@ extension NSView {
         }
     }
 }
+
+internal extension NSLock {
+    func performLocked(@noescape action: () -> Void) {
+        self.lock()
+        action()
+        self.unlock()
+    }
+
+    func calculateLocked<T>(@noescape action: () -> T) -> T {
+        self.lock()
+        let result = action()
+        self.unlock()
+        return result
+    }
+
+    func calculateLockedOrFail<T>(@noescape action: () throws -> T) throws -> T {
+        self.lock()
+        defer {
+            self.unlock()
+        }
+        let result = try action()
+        return result
+    }
+}
