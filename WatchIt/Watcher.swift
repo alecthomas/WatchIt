@@ -57,14 +57,18 @@ public class Watcher {
     public func onModelChange() {
         watches = self.model.watches.filter({$0.valid()})
         let paths: [String] = watches.map({$0.realPath})
-        log.info("Watching \(paths)")
-        self.monitor = FileSystemEventMonitor(
-            pathsToWatch: paths,
-            latency: 1,
-            watchRoot: true,
-            queue: dispatch_get_main_queue(),
-            callback: self.onFSEvents
+        if paths.isEmpty {
+            log.warning("nothing to watch")
+        } else {
+            log.info("Watching \(paths)")
+            self.monitor = FileSystemEventMonitor(
+                pathsToWatch: paths,
+                latency: 1,
+                watchRoot: true,
+                queue: dispatch_get_main_queue(),
+                callback: self.onFSEvents
             )
+        }
     }
 
     private func onFSEvents(events:[FileSystemEvent]) {
