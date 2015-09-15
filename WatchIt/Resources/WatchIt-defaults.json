@@ -1,0 +1,22 @@
+{
+  "presets": [
+    {
+      "command": "export GOPATH=\"$HOME/go\"\n/usr/local/bin/go test -v ./...",
+      "glob": "**.go",
+      "name": "Go Tests",
+      "pattern": "--- FAIL: .*$\\s+(?\u003cpath\u003e[^:]+):(?\u003cline\u003e\\d+): (?\u003cmessage\u003e.*)$"
+    },
+    {
+      "command": "export GOPATH=\"$HOME/go\"\n/usr/local/bin/go test -v ./...",
+      "glob": "**.go",
+      "name": "Go Tests (Testify)",
+      "pattern": "Location:\\s+(?\u003cpath\u003e[^:]+):(?\u003cline\u003e\\d+)$\\s+Error:\\s+(?\u003cmessage\u003e[^\\n]+)"
+    },
+    {
+      "command": "xcodebuild test -scheme $(xcodebuild -list | grep -A1 Schemes | tail -1)",
+      "glob": "**.swift",
+      "name": "Swift",
+      "pattern": "(?\u003cpath\u003e[^:]+):(?\u003cline\u003e\\d+): (?\u003cmessage\u003e.*)$"
+    }
+  ]
+}

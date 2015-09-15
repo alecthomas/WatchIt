@@ -112,7 +112,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
             .filter({i in i > 0})
             .map({i in model.presets[i - 1]})
             .subscribeNext({preset in
-                if self.detail.preset.value == nil {
+                if self.detail.preset.value == nil && !self.detail.watch.emptyPreset {
                     self.confirmPreset(preset)
                 } else {
                     self.detail.preset.value = preset

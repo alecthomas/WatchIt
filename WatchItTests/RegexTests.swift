@@ -12,74 +12,62 @@ import XCTest
 
 class RegexTests: XCTestCase {
     func testCompileValidRegex() {
-        var failed = false
-        do {
-            let _ = try Regex(pattern: ".*")
-        } catch {
-            failed = true
-        }
-        XCTAssertFalse(failed)
+        must(try Regex(pattern: ".*"))
     }
 
     func testCompileInvalidRegex() {
-        var failed = false
-        do {
-            let _ = try Regex(pattern: "*")
-        } catch {
-            failed = true
-        }
-        XCTAssertTrue(failed)
+        mustnt(try Regex(pattern: "*"))
     }
 
     func testMatch() {
         let re = try! Regex(pattern: "^(\\D+)(\\d+)(\\D+)(\\d+)$")
-        guard let match = try! re.match("abc123def456") else { XCTFail("expected match to succeed"); return }
-        XCTAssertEqual(match.count, 5)
-        XCTAssertEqual(match[1], "abc")
-        XCTAssertEqual(match[2], "123")
-        XCTAssertEqual(match[3], "def")
-        XCTAssertEqual(match[4], "456")
+        guard let match = must(try re.match("abc123def456")) else { return }
+        require(match.count == 5)
+        require(match[1] == "abc")
+        require(match[2] == "123")
+        require(match[3] == "def")
+        require(match[4] == "456")
     }
 
     func testSearch() {
         let re = try! Regex(pattern: "def(\\d+)")
         let text = "abc123def456"
         let range = text.rangeOfString("def456")
-        guard let match = try! re.search(text) else { XCTFail("expected match to succeed"); return }
-        XCTAssertEqual(match.ranges.count, 2)
-        XCTAssertEqual(match.ranges[0], range)
-        XCTAssertEqual(match[0], "def456")
-        XCTAssertEqual(match[1], "456")
+        guard let match = must(try re.search(text)) else { return }
+        require(match.ranges.count == 2)
+        require(match.ranges[0] == range)
+        require(match[0] == "def456")
+        require(match[1] == "456")
     }
 
     func testNamedSubmatch() {
-        let re = try! Regex(pattern: "^(?<a>\\D+)(?<b>\\d+)$")
-        guard let match = try! re.match("abc123") else { XCTFail("expected match to succeed"); return }
-        XCTAssertEqual(match.count, 3)
-        XCTAssertEqual(match[1], "abc")
-        XCTAssertEqual(match[2], "123")
-        XCTAssertEqual(match["a"], "abc")
-        XCTAssertEqual(match["b"], "123")
+        guard let re = must(try Regex(pattern: "^(?<a>\\D+)(?<b>\\d+)$")) else { return }
+        guard let match = must(try re.match("abc123")) else { return }
+        require(match.count == 3)
+        require(match[1] == "abc")
+        require(match[2] == "123")
+        require(match["a"] == "abc")
+        require(match["b"] == "123")
     }
 
     func testReplace() {
-        let re = try! Regex(pattern: "(\\d+)")
-        XCTAssertEqual("abc(123)def(456)", try! re.replace("abc123def456", with: "(\\1)"))
+        guard let re = must(try Regex(pattern: "(\\d+)")) else { return }
+        require("abc(123)def(456)" == must(try re.replace("abc123def456", with: "(\\1)")))
     }
 
     func testReplaceWithCount() {
         let re = try! Regex(pattern: "(\\d+)")
-        XCTAssertEqual("abc(123)def456", try! re.replace("abc123def456", with: "(\\1)", count: 1))
+        require("abc(123)def456" == must(try re.replace("abc123def456", with: "(\\1)", count: 1)))
     }
 
     func testFindAll() {
         let re = try! Regex(pattern: "(\\d+)|(\\D+)")
         let matches = try! re.findAll("abc123def456")
-        XCTAssertEqual(4, matches.count)
-        XCTAssertEqual(matches[0][0], "abc")
-        XCTAssertEqual(matches[1][0], "123")
-        XCTAssertEqual(matches[2][0], "def")
-        XCTAssertEqual(matches[3][0], "456")
+        require(4 == matches.count)
+        require(matches[0][0] == "abc")
+        require(matches[1][0] == "123")
+        require(matches[2][0] == "def")
+        require(matches[3][0] == "456")
     }
 
     func testFindAllMultiline() {
@@ -92,15 +80,15 @@ class RegexTests: XCTestCase {
                     "                             != \"hello\" (actual)\n"
 
         let re = try! Regex(pattern: "Location:\\s+(?<path>[^:]+):(?<line>\\d+)$\\s+Error:\\s+(?<message>[^\\n]+)", options: RegexOptions.MULTILINE)
-        let matches = try! re.findAll(text)
-        XCTAssertEqual(matches.count, 2)
+        guard let matches = must(try re.findAll(text)) else { return }
+        require(matches.count == 2)
 
-        XCTAssertEqual(matches[0]["path"], "parser_test.go")
-        XCTAssertEqual(matches[0]["line"], "23")
-        XCTAssertEqual(matches[0]["message"], "Expected not to be nil.")
+        require(matches[0]["path"] == "parser_test.go")
+        require(matches[0]["line"] == "23")
+        require(matches[0]["message"] == "Expected not to be nil.")
 
-        XCTAssertEqual(matches[1]["path"], "parser_test.go")
-        XCTAssertEqual(matches[1]["line"], "24")
-        XCTAssertEqual(matches[1]["message"], "Not equal: \"ello\" (expected)")
+        require(matches[1]["path"] == "parser_test.go")
+        require(matches[1]["line"] == "24")
+        require(matches[1]["message"] == "Not equal: \"ello\" (expected)")
     }
 }

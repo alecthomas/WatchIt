@@ -160,14 +160,24 @@ public class Model: JSONSerializable {
             ])
     }
 
-    public static func deserialize() -> Model {
-        log.info("deserializing model from \(modelPath)")
+    private static func loadFromFile(path: String) -> Model? {
+        guard let data = NSData(contentsOfFile: path) else { return nil }
         do {
-            guard let data = NSData(contentsOfFile: modelPath) else { return  Model() }
             return try Model(json: JSON(data: data))
         } catch {
-            return Model()
+            return nil
         }
+    }
+
+    private static func loadDefaults() -> Model {
+        let bundle = NSBundle.mainBundle()
+        guard let resource = bundle.pathForResource("WatchIt-defaults", ofType: "json") else { return Model() }
+        return loadFromFile(resource) ?? Model()
+    }
+
+    public static func deserialize() -> Model {
+        log.info("deserializing model from \(modelPath)")
+        return loadFromFile(modelPath) ?? loadDefaults()
     }
 
     public func serialize() throws {

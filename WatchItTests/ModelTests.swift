@@ -19,7 +19,7 @@ class ModelTests: XCTestCase {
         watch.directory.value = ""
         watch.glob.value = ""
         watch.pattern.value = ""
-        XCTAssertEqual(properties, ["name", "command", "directory", "glob", "pattern"])
+        require(properties == ["name", "command", "directory", "glob", "pattern"])
     }
 
     func testPresetPropertyChanged() {
@@ -30,7 +30,7 @@ class ModelTests: XCTestCase {
         preset.command.value = ""
         preset.glob.value = ""
         preset.pattern.value = ""
-        XCTAssertEqual(properties, ["name", "command", "glob", "pattern"])
+        require(properties == ["name", "command", "glob", "pattern"])
     }
 
 //    func testElementChanged() {

@@ -59,6 +59,7 @@ public class Watcher {
         let paths: [String] = watches.map({$0.realPath})
         if paths.isEmpty {
             log.warning("nothing to watch")
+            self.monitor = nil
         } else {
             log.info("Watching \(paths)")
             self.monitor = FileSystemEventMonitor(
