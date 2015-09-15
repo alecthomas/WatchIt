@@ -9,6 +9,15 @@
 import Foundation
 import pcre
 
+
+private extension SequenceType where Generator.Element == Int8 {
+    func toString() -> String {
+        var buffer = Array(self)
+        buffer.append(0) // \0 terminate the string
+        return String.fromCString(buffer)!
+    }
+}
+
 public enum RegexError: ErrorType {
     case Message(String)
 
@@ -153,19 +162,22 @@ public func & (a: RegexOptions, b: RegexOptions) -> RegexOptions {
 }
 
 // Replace match from text with text.
-private func replaceMatch(match: RegexMatch, replaceWith: String) -> (Range<String.Index>, String) {
-    var replacement = ""
+private func replaceMatch(match: RegexMatch, replaceWith: [CChar]) -> (Range<Int>, [CChar]) {
+    var replacement: [CChar] = []
     var escaping = false
-    for ch in replaceWith.characters {
-        if ch == "\\" {
+    for ch in replaceWith {
+        if ch == 0x5c /* \ */ {
             escaping = true
         } else if escaping {
             // Substitute capture group.
-            if let i = Int(String(ch)), let g = match[i] {
+            let n = Int(ch - 0x30 /* 0 */)
+            if n >= 0 && n <= 9, let range = match.ranges[n] {
+                let g = match.string[range]
                 replacement.appendContentsOf(g)
             } else {
                 // Something else was escaped, just put it back.
-                replacement.appendContentsOf("\\\(ch)")
+                replacement.append(0x5c /* \ */)
+                replacement.append(ch)
             }
             escaping = false
         } else {
@@ -181,14 +193,14 @@ public class RegexMatch: /*Indexable,*/ SequenceType, CustomStringConvertible {
 
     private let re: Regex
 
-    public let string: String
+    private let string: [CChar]
 
     // The set of matching groups.
-    public var ranges: [Range<String.Index>?]
+    private var ranges: [Range<Int>?]
 
     private init(re: Regex, string: String, ovector: UnsafeMutablePointer<Int32>, matches: Int32) {
         self.re = re
-        self.string = string
+        self.string = string.cStringUsingEncoding(NSUTF8StringEncoding)!
         ranges = []
         for var i: Int = 0; i < Int(matches); i++ {
             let start = Int(ovector[i*2])
@@ -196,25 +208,19 @@ public class RegexMatch: /*Indexable,*/ SequenceType, CustomStringConvertible {
             if start < 0 || end < 0 {
                 ranges.append(nil)
             } else {
-                ranges.append(Range(start: string.startIndex.advancedBy(start), end: string.startIndex.advancedBy(end)))
+                ranges.append(Range(start: start, end: end))
             }
         }
     }
 
     // Subscript a range (typically returned by .ranges).
-    public subscript(r: Range<String.Index>?) -> String? {
-        if r == nil {
-            return nil
-        }
-        return self.string[r!]
-    }
-
     // Retrieve captured substring.
     public subscript(i: Int) -> String? {
         if i < 0 || i >= ranges.count {
             return nil
         }
-        return self[ranges[i]]
+        guard let range = ranges[i] else { return nil }
+        return self.string[range].toString()
     }
 
     // Retrieve named captured substring.
@@ -224,14 +230,15 @@ public class RegexMatch: /*Indexable,*/ SequenceType, CustomStringConvertible {
     }
 
     public func replace(with: String) -> String {
-        let (range, replacement) = replaceMatch(self, replaceWith: with)
+        let withC = with.cStringUsingEncoding(NSUTF8StringEncoding)!
+        let (range, replacement) = replaceMatch(self, replaceWith: withC)
         var out = string
         out.replaceRange(range, with: replacement)
-        return out
+        return out.toString()
     }
 
     public var description: String {
-        return string
+        return "\(ranges.count) matches for \(re)"
     }
 
     // Number of matches.
@@ -279,8 +286,9 @@ public class Regex {
 
     // Matches text completely against the regular expression.
     public func match(text: String, options: RegexOptions = RegexOptions.None) throws -> RegexMatch? {
+        let textC = text.cStringUsingEncoding(NSUTF8StringEncoding)!
         if let m = try search(text, options: options), let g = m.ranges[0]
-                where g.startIndex == text.startIndex && g.endIndex == text.endIndex {
+                where g.startIndex == 0 && g.endIndex == textC.count - 1 {
             return m
         }
         return nil
@@ -325,19 +333,21 @@ public class Regex {
     // in "replace" with the corresponding capture groups from text.
     public func replace(text: String, with: String, count: Int = Int.max, options: RegexOptions = RegexOptions.None) throws -> String {
         var n = 0
-        var start = text.startIndex
-        var parts: [String] = []
+        var start = 0
+        let textC = text.cStringUsingEncoding(NSUTF8StringEncoding)!
+        let withC = with.cStringUsingEncoding(NSUTF8StringEncoding)!
+        var out: [Int8] = []
         for match in try findAll(text, options: options) {
-            let (range, replacement) = replaceMatch(match, replaceWith: with)
-            parts.append(text[Range<String.Index>(start: start, end: range.startIndex)])
-            parts.append(replacement)
+            let (range, replacement) = replaceMatch(match, replaceWith: withC)
+            out.appendContentsOf(textC[start..<range.startIndex])
+            out.appendContentsOf(replacement[0..<replacement.count - 1])
             start = range.endIndex
             if ++n >= count {
                 break
             }
         }
-        parts.append(text[Range<String.Index>(start: start, end: text.endIndex)])
-        return parts.joinWithSeparator("")
+        out.appendContentsOf(textC[start..<textC.count - 1])
+        return out.toString()
     }
 
     deinit {

@@ -32,10 +32,8 @@ class RegexTests: XCTestCase {
     func testSearch() {
         let re = try! Regex(pattern: "def(\\d+)")
         let text = "abc123def456"
-        let range = text.rangeOfString("def456")
         guard let match = must(try re.search(text)) else { return }
-        require(match.ranges.count == 2)
-        require(match.ranges[0] == range)
+        require(match.count == 2)
         require(match[0] == "def456")
         require(match[1] == "456")
     }
@@ -90,5 +88,21 @@ class RegexTests: XCTestCase {
         require(matches[1]["path"] == "parser_test.go")
         require(matches[1]["line"] == "24")
         require(matches[1]["message"] == "Not equal: \"ello\" (expected)")
+    }
+
+    func testUTFFindAll() {
+        let text =  "Sîne klâwen durh die wolken sint geslagen,\n" +
+                    "er stîget ûf mit grôzer kraft,\n" +
+                    "ich sih in grâwen tägelîch als er wil tagen,\n" +
+                    "den tac, der im geselleschaft\n" +
+                    "erwenden wil, dem werden man,\n" +
+                    "den ich mit sorgen în verliez.\n" +
+                    "ich bringe in hinnen, ob ich kan.\n" +
+                    "sîn vil manegiu tugent michz leisten hiez.\n"
+        let re = try! Regex(pattern: "de[nrm]")
+        guard let matches = must(try re.findAll(text)) else { return }
+        require(matches.count == 6)
+        let groups = matches.map({$0[0]!})
+        require(groups == ["den", "der", "den", "dem", "den", "den"])
     }
 }
