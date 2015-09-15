@@ -16,7 +16,7 @@
       "command": "xcodebuild test -scheme $(xcodebuild -list | grep -A1 Schemes | tail -1)",
       "glob": "**.swift",
       "name": "Swift",
-      "pattern": "(?\u003cpath\u003e[^:]+):(?\u003cline\u003e\\d+): (?\u003cmessage\u003e.*)$"
+      "pattern": "^(?\u003cpath\u003e/[^:]+):(?\u003cline\u003e\d+): (?\u003cmessage\u003e.*)$"
     }
   ]
 }

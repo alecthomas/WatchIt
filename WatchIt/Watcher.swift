@@ -22,7 +22,7 @@ public class Watcher {
 
     public init(model: Model) {
         self.changes = changesPublisher
-            .throttle(1.0, MainScheduler.sharedInstance)
+            .throttle(2.0, MainScheduler.sharedInstance)
         self.model = model
 
         // Trigger changes when the collection changes.

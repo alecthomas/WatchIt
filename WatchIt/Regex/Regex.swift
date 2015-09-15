@@ -188,9 +188,7 @@ private func replaceMatch(match: RegexMatch, replaceWith: [CChar]) -> (Range<Int
 }
 
 
-public class RegexMatch: /*Indexable,*/ SequenceType, CustomStringConvertible {
-    public typealias Index = String.Index
-
+public class RegexMatch: /*Indexable, */SequenceType, CustomStringConvertible {
     private let re: Regex
 
     private let string: [CChar]

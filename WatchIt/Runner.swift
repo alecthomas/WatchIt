@@ -10,44 +10,56 @@ import Foundation
 import RxSwift
 
 public class WatchTask: Disposable, CustomStringConvertible {
-    private let task: NSTask
-    private let stdoutPipe: NSPipe
-    private let stderrPipe: NSPipe
+    private var task: NSTask?
     private let pattern: Regex
 
     public let watch: Watch
-    private(set) public var stdout = NSData()
-    private(set) public var stderr = NSData()
+    private(set) public var stdout = ""
+    private(set) public var stderr = ""
     private(set) public var status: Int = -1
 
-    public init(watch: Watch, task: NSTask, stdout: NSPipe, stderr: NSPipe) {
+    public init(watch: Watch) {
         self.watch = watch
-        self.task = task
-        self.stdoutPipe = stdout
-        self.stderrPipe = stderr
         self.pattern = try! Regex(pattern: watch.pattern.value, options: RegexOptions.MULTILINE|RegexOptions.UTF8)
     }
 
     public func run() -> Int {
-        task.launch()
-        stdout = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-        stderr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-        status = Int(task.terminationStatus)
-        return self.status
+        let stdoutPipe = NSPipe()
+        let stderrPipe = NSPipe()
+        defer {
+            stdoutPipe.fileHandleForReading.closeFile()
+            stderrPipe.fileHandleForReading.closeFile()
+            stdoutPipe.fileHandleForWriting.closeFile()
+            stderrPipe.fileHandleForWriting.closeFile()
+        }
+        task = NSTask()
+        task?.currentDirectoryPath = watch.directory.value
+        task?.standardOutput = stdoutPipe
+        task?.standardError = stderrPipe
+        task?.launchPath = "/bin/sh"
+        task?.arguments = ["-l", "-c", watch.command.value]
+        task?.terminationHandler = {_ in
+            print("finished")
+        }
+        task?.launch()
+        let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+        stdout = NSString(data: stdoutData, encoding: NSUTF8StringEncoding)! as String
+        let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+        stderr = NSString(data: stderrData, encoding: NSUTF8StringEncoding)! as String
+        status = Int(task?.terminationStatus ?? -1)
+        return status
     }
 
     public func matches() -> [RegexMatch] {
-        return []
+        return (try? pattern.findAll(stdout + stderr)) ?? []
     }
 
     public func dispose() {
-        task.terminate()
-        stdoutPipe.fileHandleForReading.closeFile()
-        stderrPipe.fileHandleForReading.closeFile()
+        task?.terminate()
     }
 
     public var description: String {
-        return "RunningWatch(watch: \(watch), task: '\(task.launchPath) \(task.arguments)')"
+        return "RunningWatch(watch: \(watch), task: '\(task?.launchPath) \(task?.arguments)')"
     }
 }
 
@@ -78,17 +90,7 @@ public class Runner {
                 log.info("Terminating existing watch task: \(task)")
                 task.dispose()
             }
-            let task = NSTask()
-            let stdout = NSPipe()
-            let stderr = NSPipe()
-            task.currentDirectoryPath = watch.directory.value
-            task.standardOutput = stdout
-            task.standardError = stderr
-            task.launchPath = "/bin/sh"
-            print(task.environment)
-            task.arguments = ["-l", "-c", watch.command.value]
-
-            let runner = WatchTask(watch: watch, task: task, stdout: stdout, stderr: stderr)
+            let runner = WatchTask(watch: watch)
             running[watch.name.value] = runner
 
             dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), { self.run(runner) })
@@ -96,11 +98,8 @@ public class Runner {
     }
 
     private func run(watch: WatchTask) {
-        let stdoutFile = watch.stdoutPipe.fileHandleForReading
-        let stderrFile = watch.stderrPipe.fileHandleForReading
-
         defer {
-            log.info("Cleaning up task: \(watch.task.terminationStatus)")
+            log.info("Cleaning up task: \(watch.status)")
             lock.performLocked {
                 running.removeValueForKey(watch.watch.name.value)
                 watch.dispose()
@@ -109,14 +108,11 @@ public class Runner {
 
 
         log.info("Launching watch task: \(watch)")
-        let status = watch.run()
+        watch.run()
 
         completedPublisher.on(.Next(watch))
 
-        guard let stdout = NSString(data: watch.stdout, encoding: NSUTF8StringEncoding) as? String else { return }
-        guard let stderr = NSString(data: watch.stderr, encoding: NSUTF8StringEncoding) as? String else { return }
-
-        for match in try! watch.pattern.findAll(stdout + stderr) {
+        for match in watch.matches() {
             print(match["path"], match["line"], match["message"])
         }
     }
