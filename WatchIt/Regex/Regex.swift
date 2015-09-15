@@ -233,7 +233,7 @@ public class RegexMatch: /*Indexable,*/ SequenceType, CustomStringConvertible {
         let withC = with.cStringUsingEncoding(NSUTF8StringEncoding)!
         let (range, replacement) = replaceMatch(self, replaceWith: withC)
         var out = string
-        out.replaceRange(range, with: replacement)
+        out.replaceRange(range, with: replacement[0..<replacement.count - 1])
         return out.toString()
     }
 

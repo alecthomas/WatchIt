@@ -58,6 +58,12 @@ class RegexTests: XCTestCase {
         require("abc(123)def456" == must(try re.replace("abc123def456", with: "(\\1)", count: 1)))
     }
 
+    func testMatchReplace() {
+        let re = try! Regex(pattern: "(\\d+)")
+        let match = try! re.search("abc123def456")!
+        require(match.replace("(\\1)") == "abc(123)def456")
+    }
+
     func testFindAll() {
         let re = try! Regex(pattern: "(\\d+)|(\\D+)")
         let matches = try! re.findAll("abc123def456")
