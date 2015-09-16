@@ -1,22 +1,25 @@
 {
   "presets": [
     {
+      "id": "dd7997a4-5c1f-11e5-8ebe-3c15c2bedeea",
       "command": "export GOPATH=\"$HOME/go\"\n/usr/local/bin/go test -v ./...",
       "glob": "**.go",
       "name": "Go Tests",
       "pattern": "--- FAIL: .*$\\s+(?\u003cpath\u003e[^:]+):(?\u003cline\u003e\\d+): (?\u003cmessage\u003e.*)$"
     },
     {
+      "id": "de4c868c-5c1f-11e5-b814-3c15c2bedeea",
       "command": "export GOPATH=\"$HOME/go\"\n/usr/local/bin/go test -v ./...",
       "glob": "**.go",
       "name": "Go Tests (Testify)",
       "pattern": "Location:\\s+(?\u003cpath\u003e[^:]+):(?\u003cline\u003e\\d+)$\\s+Error:\\s+(?\u003cmessage\u003e[^\\n]+)"
     },
     {
+      "id": "de74ae82-5c1f-11e5-bf5d-3c15c2bedeea",
       "command": "xcodebuild test -scheme $(xcodebuild -list | grep -A1 Schemes | tail -1)",
       "glob": "**.swift",
       "name": "Swift",
-      "pattern": "^(?\u003cpath\u003e/[^:]+):(?\u003cline\u003e\d+): (?\u003cmessage\u003e.*)$"
+      "pattern": "^(?<path>[^:\\n]+):(?<line>\\d+): \\w+: -\\[[^]]+\\] : (?<message>[^\\n]*)"
     }
   ]
 }

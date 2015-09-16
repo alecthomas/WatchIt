@@ -23,7 +23,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
     @IBOutlet weak var tableView: NSTableView!
 
     var detail = PreferencesDetailViewModel()
-    var presetTextColor = Value<NSColor>(NSColor.textColor())
+    var presetTextColor = Value(NSColor.textColor())
     var bag = DisposeBag()
 
     override func windowDidLoad() {
@@ -64,7 +64,6 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
             .addDisposableTo(bag)
 
         model.watches.collectionChanged.subscribeNext(onWatchesChanged).addDisposableTo(bag)
-        model.presets.collectionChanged.subscribeNext(onPresetsChanged).addDisposableTo(bag)
 
         detail.watch.name.bidirectionalBindTo(nameField).addDisposableTo(bag)
         detail.watch.directory.bidirectionalBindTo(dirField).addDisposableTo(bag)
@@ -93,9 +92,11 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         detail.presetFields
             .subscribeNext({(glob, command, pattern) in
                 if let preset = model.presetForWatch(self.detail.watch) {
+                    self.detail.setPreset(preset)
                     self.presetField.selectItemWithTitle(preset.name.value)
                     self.presetTextColor.value = NSColor.grayColor()
                 } else {
+                    self.detail.setPreset(nil)
                     self.presetField.selectItemAtIndex(0)
                     self.presetTextColor.value = NSColor.textColor()
                 }
@@ -112,7 +113,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
             .filter({i in i > 0})
             .map({i in model.presets[i - 1]})
             .subscribeNext({preset in
-                if self.detail.preset.value == nil && !self.detail.watch.emptyPreset {
+                if self.detail.preset.value == nil && self.detail.watch.preset.value != "" {
                     self.confirmPreset(preset)
                 } else {
                     self.detail.preset.value = preset
@@ -134,10 +135,6 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         } else {
             presetField.selectItemAtIndex(selected)
         }
-    }
-
-    func onPresetsChanged(event: ObservableCollectionEvent<Preset>) {
-        updatePresets()
     }
 
     func onWatchesChanged(event: ObservableCollectionEvent<Watch>) {

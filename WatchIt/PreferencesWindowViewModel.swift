@@ -26,13 +26,14 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
             .filter({p in p != nil})
             .map({p in p!})
             .subscribeNext({preset in
+                self.watch.preset.value = preset.id.value
                 self.watch.glob.value = preset.glob.value
                 self.watch.command.value = preset.command.value
                 self.watch.pattern.value = preset.pattern.value
             })
         presetFields
             .subscribeNext({(glob, command, pattern) in
-                let selected = model.presetForWatch(self.watch)
+                let selected = model.presetForId(self.watch.preset.value)
                 if self.preset.value != selected {
                     self.preset.value = selected
                 }
@@ -45,8 +46,10 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
     public func bind(watchIndex: Int) {
         bag = DisposeBag()
         let watch = model.watches[watchIndex]
+        bidirectionalBindTo(watch.id, self.watch.id).addDisposableTo(bag)
         bidirectionalBindTo(watch.name, self.watch.name).addDisposableTo(bag)
         bidirectionalBindTo(watch.directory, self.watch.directory).addDisposableTo(bag)
+        bidirectionalBindTo(watch.preset, self.watch.preset).addDisposableTo(bag)
         bidirectionalBindTo(watch.glob, self.watch.glob).addDisposableTo(bag)
         bidirectionalBindTo(watch.command, self.watch.command).addDisposableTo(bag)
         bidirectionalBindTo(watch.pattern, self.watch.pattern).addDisposableTo(bag)
@@ -65,6 +68,10 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
 
     public func removeWatch(index: Int) {
         model.watches.removeAtIndex(index)
+    }
+
+    public func setPreset(preset: Preset?) {
+        self.watch.setPreset(preset)
     }
 
     public func hasPresets() -> Bool {

@@ -9,6 +9,27 @@
 import Foundation
 import RxSwift
 
+public class WatchError: CustomStringConvertible {
+    public let id: String
+    public let watch: Watch
+    public let path: String
+    public let line: Int
+    public let message: String
+
+    public init(watch: Watch, path: String, line: Int, message: String) {
+        self.id = NSUUID().UUIDString
+        self.watch = watch
+        self.path = path
+        self.line = line
+        self.message = message
+    }
+
+    public var description: String {
+        let last = (path as NSString).lastPathComponent
+        return "\(last):\(line): \(message)"
+    }
+}
+
 public class WatchTask: Disposable, CustomStringConvertible {
     private var task: NSTask?
     private let pattern: Regex
@@ -17,6 +38,7 @@ public class WatchTask: Disposable, CustomStringConvertible {
     private(set) public var stdout = ""
     private(set) public var stderr = ""
     private(set) public var status: Int = -1
+    private(set) public var errors: [WatchError] = []
 
     public init(watch: Watch) {
         self.watch = watch
@@ -38,20 +60,20 @@ public class WatchTask: Disposable, CustomStringConvertible {
         task?.standardError = stderrPipe
         task?.launchPath = "/bin/sh"
         task?.arguments = ["-l", "-c", watch.command.value]
-        task?.terminationHandler = {_ in
-            print("finished")
-        }
         task?.launch()
         let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
         stdout = NSString(data: stdoutData, encoding: NSUTF8StringEncoding)! as String
         let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
         stderr = NSString(data: stderrData, encoding: NSUTF8StringEncoding)! as String
         status = Int(task?.terminationStatus ?? -1)
+        for match in (try? pattern.findAll(stdout + stderr)) ?? [] {
+            if  let path = match["path"],
+                let line = Int(match["line"] ?? "0"),
+                let message = match["message"] {
+                    errors.append(WatchError(watch: watch, path: path, line: line, message: message))
+            }
+        }
         return status
-    }
-
-    public func matches() -> [RegexMatch] {
-        return (try? pattern.findAll(stdout + stderr)) ?? []
     }
 
     public func dispose() {
@@ -59,25 +81,16 @@ public class WatchTask: Disposable, CustomStringConvertible {
     }
 
     public var description: String {
-        return "RunningWatch(watch: \(watch), task: '\(task?.launchPath) \(task?.arguments)')"
+        return "WatchTask(watch: \(watch), task: '\(task?.launchPath) \(task?.arguments)')"
     }
-}
-
-public struct Failure {
-    public var path: String
-    public var line: Int
-    public var column: Int?
-    public var message: String
 }
 
 public class Runner {
     private var lock = NSLock()
     private var running: [String: WatchTask] = [:]
-    private var failurePublisher = PublishSubject<Failure>()
-    private var completedPublisher = PublishSubject<WatchTask>()
+    private var failurePublisher = PublishSubject<WatchError>()
 
-    public var failures: Observable<Failure> { return failurePublisher }
-    public var completed: Observable<WatchTask> { return completedPublisher }
+    public var failures: Observable<WatchError> { return failurePublisher }
 
     public init(changes: Observable<Watch>) {
         changes.subscribeNext(self.start)
@@ -109,11 +122,8 @@ public class Runner {
 
         log.info("Launching watch task: \(watch)")
         watch.run()
-
-        completedPublisher.on(.Next(watch))
-
-        for match in watch.matches() {
-            print(match["path"], match["line"], match["message"])
+        for error in watch.errors {
+            failurePublisher.on(.Next(error))
         }
     }
 }

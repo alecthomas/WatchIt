@@ -18,6 +18,8 @@
 		703E5E4C1B998B400026036C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 703E5E4B1B998B400026036C /* Assets.xcassets */; };
 		703E5E4F1B998B400026036C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 703E5E4D1B998B400026036C /* MainMenu.xib */; };
 		705146011BA1017400F05F12 /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = 705146001BA1017400F05F12 /* Value.swift */; settings = {ASSET_TAGS = (); }; };
+		70AC60701BA96093005E847A /* Execute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AC606F1BA96093005E847A /* Execute.swift */; settings = {ASSET_TAGS = (); }; };
+		70AC60721BA9AC2E005E847A /* ExecuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AC60711BA9AC2E005E847A /* ExecuteTests.swift */; settings = {ASSET_TAGS = (); }; };
 		70C8C0B31B998CFD003D9B27 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0AB1B998CFD003D9B27 /* Extensions.swift */; settings = {ASSET_TAGS = (); }; };
 		70C8C0B41B998CFD003D9B27 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0AC1B998CFD003D9B27 /* Model.swift */; settings = {ASSET_TAGS = (); }; };
 		70C8C0B61B998CFD003D9B27 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C8C0AF1B998CFD003D9B27 /* PreferencesWindow.swift */; settings = {ASSET_TAGS = (); }; };
@@ -44,7 +46,6 @@
 		70FBF4DF1BA791460019A32F /* EonilFileSystemEvents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */; };
 		70FBF4E01BA791460019A32F /* EonilFileSystemEvents.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		70FBF4E41BA79B870019A32F /* WatchIt-defaults.json in Resources */ = {isa = PBXBuildFile; fileRef = 70FBF4E31BA79B870019A32F /* WatchIt-defaults.json */; settings = {ASSET_TAGS = (); }; };
-		70FBF4E61BA79BC30019A32F /* WatchIt-defaults.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = 70FBF4E31BA79B870019A32F /* WatchIt-defaults.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,16 +86,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		70FBF4E51BA79BBD0019A32F /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-				70FBF4E61BA79BC30019A32F /* WatchIt-defaults.json in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +106,8 @@
 		703E5E551B998B400026036C /* WatchItTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchItTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		703E5E5B1B998B400026036C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		705146001BA1017400F05F12 /* Value.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
+		70AC606F1BA96093005E847A /* Execute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Execute.swift; sourceTree = "<group>"; };
+		70AC60711BA9AC2E005E847A /* ExecuteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExecuteTests.swift; sourceTree = "<group>"; };
 		70C8C0AA1B998CFC003D9B27 /* WatchIt-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WatchIt-Bridging-Header.h"; sourceTree = "<group>"; };
 		70C8C0AB1B998CFD003D9B27 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		70C8C0AC1B998CFD003D9B27 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
@@ -224,6 +217,7 @@
 				703E5E501B998B400026036C /* Info.plist */,
 				70C8C0AA1B998CFC003D9B27 /* WatchIt-Bridging-Header.h */,
 				701E60D31BA295CF00488CFA /* Runner.swift */,
+				70AC606F1BA96093005E847A /* Execute.swift */,
 			);
 			path = WatchIt;
 			sourceTree = "<group>";
@@ -237,6 +231,7 @@
 				702AABEB1B9D778B00158C8D /* RegexTests.swift */,
 				70E900EF1BA017910052AE5B /* ModelTests.swift */,
 				70FBF4C51BA783940019A32F /* Require.swift */,
+				70AC60711BA9AC2E005E847A /* ExecuteTests.swift */,
 			);
 			path = WatchItTests;
 			sourceTree = "<group>";
@@ -275,7 +270,6 @@
 				703E5E431B998B400026036C /* Frameworks */,
 				703E5E441B998B400026036C /* Resources */,
 				70C8C0C41B998DEB003D9B27 /* Embed Frameworks */,
-				70FBF4E51BA79BBD0019A32F /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -376,6 +370,7 @@
 				702AABF61B9E767500158C8D /* Glob.swift in Sources */,
 				702AABE61B9D042B00158C8D /* Watcher.swift in Sources */,
 				702AABF31B9E767000158C8D /* Regex.swift in Sources */,
+				70AC60701BA96093005E847A /* Execute.swift in Sources */,
 				703E5E4A1B998B400026036C /* AppDelegate.swift in Sources */,
 				702AABF41B9E767000158C8D /* pcrewrapper.c in Sources */,
 				701E60D41BA295CF00488CFA /* Runner.swift in Sources */,
@@ -389,6 +384,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				70E900F81BA0FDDA0052AE5B /* ObservablesTest.swift in Sources */,
+				70AC60721BA9AC2E005E847A /* ExecuteTests.swift in Sources */,
 				70E900F01BA017910052AE5B /* ModelTests.swift in Sources */,
 				702AABEA1B9D6FA200158C8D /* GlobTests.swift in Sources */,
 				702AABEC1B9D778B00158C8D /* RegexTests.swift in Sources */,

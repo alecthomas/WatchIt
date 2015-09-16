@@ -17,12 +17,15 @@ public class Watcher {
     private var watches: [Watch] = []
 
     private let changesPublisher = PublishSubject<Watch>()
+    private let filesystemEventsPublisher = PublishSubject<FileSystemEvent>()
 
     public let changes: Observable<Watch>
+    public let filesystemEvents: Observable<FileSystemEvent>
 
     public init(model: Model) {
         self.changes = changesPublisher
             .throttle(2.0, MainScheduler.sharedInstance)
+        self.filesystemEvents = filesystemEventsPublisher
         self.model = model
 
         // Trigger changes when the collection changes.
@@ -75,6 +78,7 @@ public class Watcher {
     private func onFSEvents(events:[FileSystemEvent]) {
         for watch in watches {
             for event in events {
+                filesystemEventsPublisher.on(.Next(event))
                 if event.path.hasPrefix(watch.realPath) &&  glob(watch.glob.value, path: event.path) {
                     changesPublisher.on(.Next(watch))
                     break

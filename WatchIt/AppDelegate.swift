@@ -15,8 +15,17 @@ import RxSwift
 let log = XCGLogger()
 var model = Model.deserialize()
 
+func delay(delay:Double, closure:()->()) {
+    dispatch_after(
+        dispatch_time(
+            DISPATCH_TIME_NOW,
+            Int64(delay * Double(NSEC_PER_SEC))
+        ),
+        dispatch_get_main_queue(), closure)
+}
+
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
 
     var preferencesWindow = PreferencesWindow(windowNibName: "PreferencesWindow")
     var monitors: FileSystemEventMonitor?
@@ -24,9 +33,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem = NSStatusBar.systemStatusBar().statusItemWithLength(-1)
     var watcher = Watcher(model: model)
     var runner: Runner
+    var notificationCenter: NSUserNotificationCenter!
 
     @IBOutlet weak var menu: NSMenu!
     @IBOutlet weak var watchesMenu: NSMenu!
+
+    private var notifications: [String:WatchError] = [:]
 
     override init() {
         runner = Runner(changes: watcher.changes)
@@ -34,17 +46,54 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
+        notificationCenter = NSUserNotificationCenter.defaultUserNotificationCenter()
+        notificationCenter.removeAllDeliveredNotifications()
+        notificationCenter.delegate = self
+
         let icon = NSImage(named: "eye-icon")
         icon?.template = true
         statusItem.image = icon
         statusItem.menu = menu
-//        preferencesWindow.showWindow(self)
+        if model.watches.isEmpty {
+            preferencesWindow.showWindow(self)
+        }
         updateMenu()
         // Monitor model for changes.
         sequenceOf(model.watches.anyChange, model.presets.anyChange)
             .merge()
             .throttle(0.25, MainScheduler.sharedInstance)
             .subscribeNext(saveAndUpdateMenu)
+        runner.failures
+            .subscribeNext(sendNotification)
+    }
+
+    func sendNotification(error: WatchError) {
+        let notification = NSUserNotification()
+        notification.title = "\(error.watch.name) failed"
+        notification.informativeText = error.description
+        notification.identifier = error.id
+        notifications[error.id] = error
+        notificationCenter.deliverNotification(notification)
+        // Remove notification after 10 seconds.
+        delay(10.0) {
+            self.notifications.removeValueForKey(error.id)
+            self.notificationCenter.removeDeliveredNotification(notification)
+        }
+    }
+
+    func userNotificationCenter(center: NSUserNotificationCenter, didActivateNotification notification: NSUserNotification) {
+        if let error = notifications[notification.identifier!] {
+            let task = NSTask()
+            var path = error.path
+            if !path.hasPrefix("/") {
+                path = NSURL(fileURLWithPath: error.watch.realPath).URLByAppendingPathComponent(path).path!
+            }
+            task.launchPath = "/Users/alec/bin/subl"
+            task.arguments = ["\(path):\(error.line)"]
+            task.launch()
+        }
+        notifications.removeAll()
+        center.removeDeliveredNotification(notification)
     }
 
     func saveAndUpdateMenu() {
