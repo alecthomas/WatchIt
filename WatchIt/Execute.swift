@@ -51,10 +51,11 @@ private func throwIfGlobalError(@autoclosure f: () -> Int32, context: String = "
 }
 
 // Execute a command and return its combined stdout and stderr.
-public func execute(command: [String]) throws -> (Int, String) {
+public func execute(command: [String], cwd: String? = nil) throws -> (Int, String) {
     let outpipe = UnsafeMutablePointer<Int32>.alloc(2)
     defer { outpipe.dealloc(2) }
     try throwIfGlobalError(pipe(outpipe), context: "pipe()")
+
 
     defer {
         close(outpipe[0])
@@ -87,7 +88,19 @@ public func execute(command: [String]) throws -> (Int, String) {
     defer { env.dealloc(1) }
     env[0] = nil
 
+    // TODO: Global lock around changing directory. Annoying.
+    let oldwd = UnsafeMutablePointer<Int8>.alloc(8192)
+    defer { oldwd.dealloc(8192) }
+    getcwd(oldwd, 8192)
+    if let cwd = cwd {
+        chdir(cwd)
+    }
+
     try throwIfError(posix_spawnp(pid, argv[0], action, nil, argv, env), context: "posix_spawnp()")
+
+    if cwd != nil {
+        chdir(oldwd)
+    }
 
     var out = ""
     let buffer = UnsafeMutablePointer<Int8>.alloc(1025)

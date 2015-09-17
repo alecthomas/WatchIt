@@ -31,7 +31,6 @@ public class WatchError: CustomStringConvertible {
 }
 
 public class WatchTask: Disposable, CustomStringConvertible {
-    private var task: NSTask?
     private let pattern: Regex
 
     public let watch: Watch
@@ -46,42 +45,27 @@ public class WatchTask: Disposable, CustomStringConvertible {
     }
 
     public func run() -> Int {
-        let stdoutPipe = NSPipe()
-        let stderrPipe = NSPipe()
-        defer {
-            stdoutPipe.fileHandleForReading.closeFile()
-            stderrPipe.fileHandleForReading.closeFile()
-            stdoutPipe.fileHandleForWriting.closeFile()
-            stderrPipe.fileHandleForWriting.closeFile()
-        }
-        task = NSTask()
-        task?.currentDirectoryPath = watch.directory.value
-        task?.standardOutput = stdoutPipe
-        task?.standardError = stderrPipe
-        task?.launchPath = "/bin/sh"
-        task?.arguments = ["-l", "-c", watch.command.value]
-        task?.launch()
-        let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-        stdout = NSString(data: stdoutData, encoding: NSUTF8StringEncoding)! as String
-        let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-        stderr = NSString(data: stderrData, encoding: NSUTF8StringEncoding)! as String
-        status = Int(task?.terminationStatus ?? -1)
-        for match in (try? pattern.findAll(stdout + stderr)) ?? [] {
-            if  let path = match["path"],
-                let line = Int(match["line"] ?? "0"),
-                let message = match["message"] {
-                    errors.append(WatchError(watch: watch, path: path, line: line, message: message))
+        do {
+            let (status, output) = try execute(["/bin/sh", "-l", "-c", watch.command.value], cwd: watch.directory.value)
+            for match in try pattern.findAll(output) {
+                if  let path = match["path"],
+                    let line = Int(match["line"] ?? "0"),
+                    let message = match["message"] {
+                        errors.append(WatchError(watch: watch, path: path, line: line, message: message))
+                }
             }
+            return status
+        } catch let err {
+            log.error("exec of \(watch.command.value) failed: \(err)")
         }
-        return status
+        return -1
     }
 
     public func dispose() {
-        task?.terminate()
     }
 
     public var description: String {
-        return "WatchTask(watch: \(watch), task: '\(task?.launchPath) \(task?.arguments)')"
+        return "WatchTask(watch: \(watch))"
     }
 }
 
