@@ -48,9 +48,12 @@ public class WatchTask: CustomStringConvertible {
         do {
             process = try Process(command: ["/bin/sh", "-l", "-c", watch.command.value], cwd: watch.realPath).launch()
             let (status, output) = try process.wait()
+            self.status = status
             for match in try pattern.findAll(output) {
                 if  let path = match["path"], let line = Int(match["line"] ?? "0"), let message = match["message"] {
-                    errors.append(WatchError(watch: watch, path: path, line: line, message: message))
+                    let error = WatchError(watch: watch, path: path, line: line, message: message)
+                    log.warning("Matched error: \(error)")
+                    errors.append(error)
                 }
             }
             return status

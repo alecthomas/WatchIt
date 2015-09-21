@@ -12,7 +12,7 @@ import XCTest
 
 class GlobTests: XCTestCase {
     func testGlob() {
-        must(glob("**/*.go", path: "foo/bar/waz.go"))
+        must(glob("**/*.g", path: "foo/bar/waz.go"))
         must(!glob("*/*.go", path: "foo/bar/waz.go"))
         must(glob("*/*.go", path: "bar/waz.go"))
         must(glob("*/*/*.go", path: "foo/bar/waz.go"))

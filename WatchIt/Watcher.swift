@@ -24,7 +24,7 @@ public class Watcher {
 
     public init(model: Model) {
         self.changes = changesPublisher
-            .throttle(1.0, MainScheduler.sharedInstance)
+            .throttle(2.0, MainScheduler.sharedInstance)
         self.filesystemEvents = filesystemEventsPublisher
         self.model = model
 
@@ -80,6 +80,7 @@ public class Watcher {
             for event in events {
                 filesystemEventsPublisher.on(.Next(event))
                 if event.path.hasPrefix(watch.realPath) &&  glob(watch.glob.value, path: event.path) {
+                    print(event)
                     changesPublisher.on(.Next(watch))
                     break
                 }
