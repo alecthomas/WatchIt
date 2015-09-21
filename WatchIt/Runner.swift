@@ -30,9 +30,9 @@ public class WatchError: CustomStringConvertible {
     }
 }
 
-public class WatchTask: Disposable, CustomStringConvertible {
+public class WatchTask: CustomStringConvertible {
     private let pattern: Regex
-
+    private var process: ProcessState!
     public let watch: Watch
     private(set) public var stdout = ""
     private(set) public var stderr = ""
@@ -46,12 +46,11 @@ public class WatchTask: Disposable, CustomStringConvertible {
 
     public func run() -> Int {
         do {
-            let (status, output) = try execute(["/bin/sh", "-l", "-c", watch.command.value], cwd: watch.directory.value)
+            process = try Process(command: ["/bin/sh", "-l", "-c", watch.command.value], cwd: watch.realPath).launch()
+            let (status, output) = try process.wait()
             for match in try pattern.findAll(output) {
-                if  let path = match["path"],
-                    let line = Int(match["line"] ?? "0"),
-                    let message = match["message"] {
-                        errors.append(WatchError(watch: watch, path: path, line: line, message: message))
+                if  let path = match["path"], let line = Int(match["line"] ?? "0"), let message = match["message"] {
+                    errors.append(WatchError(watch: watch, path: path, line: line, message: message))
                 }
             }
             return status
@@ -61,7 +60,15 @@ public class WatchTask: Disposable, CustomStringConvertible {
         return -1
     }
 
-    public func dispose() {
+    public func kill() {
+        if let process = self.process {
+            // Ignore any error from kill.
+            do {
+                try process.kill()
+            } catch let err {
+                log.error("failed to kill process: \(err)")
+            }
+        }
     }
 
     public var description: String {
@@ -85,7 +92,7 @@ public class Runner {
         lock.performLocked {
             if let task = running[watch.name.value] {
                 log.info("Terminating existing watch task: \(task)")
-                task.dispose()
+                task.kill()
             }
             let runner = WatchTask(watch: watch)
             running[watch.name.value] = runner
@@ -99,7 +106,6 @@ public class Runner {
             log.info("Cleaning up task: \(watch.status)")
             lock.performLocked {
                 running.removeValueForKey(watch.watch.name.value)
-                watch.dispose()
             }
         }
 

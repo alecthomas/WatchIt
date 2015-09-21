@@ -24,7 +24,7 @@ public class Watcher {
 
     public init(model: Model) {
         self.changes = changesPublisher
-            .throttle(2.0, MainScheduler.sharedInstance)
+            .throttle(1.0, MainScheduler.sharedInstance)
         self.filesystemEvents = filesystemEventsPublisher
         self.model = model
 
