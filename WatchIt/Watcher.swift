@@ -46,7 +46,7 @@ public class Watcher {
                 .flatMap({elements in elements.asObservable()})
             )
             .merge()
-            .filter({w in w.valid()})
+            .filter({w in w.valid.value})
             .bindTo(changesPublisher)
 
         // Update the file system monitor when the collection changes.
@@ -58,7 +58,7 @@ public class Watcher {
     }
 
     public func onModelChange() {
-        watches = self.model.watches.filter({$0.valid()})
+        watches = self.model.watches.filter({$0.valid.value})
         let paths: [String] = watches.map({$0.realPath})
         if paths.isEmpty {
             log.warning("nothing to watch")

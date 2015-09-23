@@ -46,6 +46,10 @@
 		70FBF4DF1BA791460019A32F /* EonilFileSystemEvents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */; };
 		70FBF4E01BA791460019A32F /* EonilFileSystemEvents.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 70C8C0C51B998DF0003D9B27 /* EonilFileSystemEvents.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		70FBF4E41BA79B870019A32F /* WatchIt-defaults.json in Resources */ = {isa = PBXBuildFile; fileRef = 70FBF4E31BA79B870019A32F /* WatchIt-defaults.json */; settings = {ASSET_TAGS = (); }; };
+		CB7B80A91BB307E8002FF99D /* SnapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB7B80A81BB307E8002FF99D /* SnapKit.framework */; };
+		CB7B80AA1BB307F8002FF99D /* SnapKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CB7B80A81BB307E8002FF99D /* SnapKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		CB7B80B51BB32870002FF99D /* WatcherSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB7B80B31BB32870002FF99D /* WatcherSettingsController.swift */; settings = {ASSET_TAGS = (); }; };
+		CB7B80B61BB32870002FF99D /* WatcherSettings.xib in Resources */ = {isa = PBXBuildFile; fileRef = CB7B80B41BB32870002FF99D /* WatcherSettings.xib */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +69,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				CB7B80AA1BB307F8002FF99D /* SnapKit.framework in Embed Frameworks */,
 				70FBF4DA1BA791460019A32F /* RxCocoa.framework in Embed Frameworks */,
 				70FBF4DE1BA791460019A32F /* XCGLogger.framework in Embed Frameworks */,
 				70FBF4D81BA791400019A32F /* RxSwift.framework in Embed Frameworks */,
@@ -125,6 +130,9 @@
 		70FBF4CD1BA790C20019A32F /* RxBlocking.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxBlocking.framework; path = Carthage/Build/Mac/RxBlocking.framework; sourceTree = "<group>"; };
 		70FBF4D31BA791070019A32F /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/Mac/RxSwift.framework; sourceTree = "<group>"; };
 		70FBF4E31BA79B870019A32F /* WatchIt-defaults.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "WatchIt-defaults.json"; sourceTree = "<group>"; };
+		CB7B80A81BB307E8002FF99D /* SnapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SnapKit.framework; path = Carthage/Build/Mac/SnapKit.framework; sourceTree = "<group>"; };
+		CB7B80B31BB32870002FF99D /* WatcherSettingsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatcherSettingsController.swift; sourceTree = "<group>"; };
+		CB7B80B41BB32870002FF99D /* WatcherSettings.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WatcherSettings.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +140,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB7B80A91BB307E8002FF99D /* SnapKit.framework in Frameworks */,
 				70FBF4D91BA791460019A32F /* RxCocoa.framework in Frameworks */,
 				70FBF4DD1BA791460019A32F /* XCGLogger.framework in Frameworks */,
 				70FBF4D71BA791400019A32F /* RxSwift.framework in Frameworks */,
@@ -166,6 +175,7 @@
 		70388A191B9FBA0F0009BAE1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CB7B80A81BB307E8002FF99D /* SnapKit.framework */,
 				70FBF4D31BA791070019A32F /* RxSwift.framework */,
 				70FBF4CD1BA790C20019A32F /* RxBlocking.framework */,
 				70FBF4CA1BA790A10019A32F /* RxCocoa.framework */,
@@ -199,6 +209,7 @@
 		703E5E481B998B400026036C /* WatchIt */ = {
 			isa = PBXGroup;
 			children = (
+				CB7B80AB1BB308DC002FF99D /* Views */,
 				70FBF4E21BA79B6F0019A32F /* Resources */,
 				705146051BA122E400F05F12 /* Extensions */,
 				70E900F51BA0FDD30052AE5B /* Observables.swift */,
@@ -257,6 +268,15 @@
 				70FBF4E31BA79B870019A32F /* WatchIt-defaults.json */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		CB7B80AB1BB308DC002FF99D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CB7B80B31BB32870002FF99D /* WatcherSettingsController.swift */,
+				CB7B80B41BB32870002FF99D /* WatcherSettings.xib */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -342,6 +362,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB7B80B61BB32870002FF99D /* WatcherSettings.xib in Resources */,
 				703E5E4C1B998B400026036C /* Assets.xcassets in Resources */,
 				70C8C0B71B998CFD003D9B27 /* PreferencesWindow.xib in Resources */,
 				70FBF4E41BA79B870019A32F /* WatchIt-defaults.json in Resources */,
@@ -370,6 +391,7 @@
 				702AABF61B9E767500158C8D /* Glob.swift in Sources */,
 				702AABE61B9D042B00158C8D /* Watcher.swift in Sources */,
 				702AABF31B9E767000158C8D /* Regex.swift in Sources */,
+				CB7B80B51BB32870002FF99D /* WatcherSettingsController.swift in Sources */,
 				70AC60701BA96093005E847A /* Execute.swift in Sources */,
 				703E5E4A1B998B400026036C /* AppDelegate.swift in Sources */,
 				702AABF41B9E767000158C8D /* pcrewrapper.c in Sources */,

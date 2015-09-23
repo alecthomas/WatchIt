@@ -154,7 +154,20 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
     }
 
     @IBAction func onAdd(sender: AnyObject) {
-        detail.addWatch()
+//        let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: self.window!.frame.size.width + 100, height: 500), styleMask: NSClosableWindowMask, backing: NSBackingStoreType.Buffered, `defer`: true)
+//        let panelView = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 400))
+//        panel.contentView = panelView
+        
+//        let panel = WatcherSettingsWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 400), styleMask: NSClosableWindowMask, backing: .Buffered, `defer`: true)
+        
+//        let panel = WatcherSettingsController()
+        let panel = WatcherSettingsController(windowNibName: "WatcherSettings")
+        self.window?.beginSheet(panel.window!) { response in
+            if response == NSModalResponseOK {
+            }
+            panel.close()
+        }
+        //detail.addWatch()
     }
 
     @IBAction func onRemove(sender: AnyObject) {
@@ -220,7 +233,7 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
     func tableView(tableView: NSTableView, willDisplayCell cell: AnyObject, forTableColumn tableColumn: NSTableColumn?, row: Int) {
         let tcell = cell as! NSTextFieldCell
         let watch = model.watches[row]
-        tcell.textColor = watch.valid() ? NSColor.textColor() : NSColor.redColor()
+        tcell.textColor = watch.valid.value ? NSColor.textColor() : NSColor.redColor()
     }
 
     // Override enter key so it actually inserts a newline...
