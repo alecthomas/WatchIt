@@ -10,19 +10,17 @@ import Cocoa
 import RxSwift
 import RxCocoa
 
-class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate, NSTextFieldDelegate  {
-    @IBOutlet weak var controlGroup: NSView!
-    @IBOutlet weak var nameField: NSTextField!
-    @IBOutlet weak var dirField: NSTextField!
-    @IBOutlet weak var dirDialog: NSButton!
-    @IBOutlet weak var presetField: NSPopUpButton!
-    @IBOutlet weak var globField: NSTextField!
-    @IBOutlet weak var commandField: NSTextField!
-    @IBOutlet weak var patternField: NSTextField!
-
+class PreferencesWindow: NSWindowController, NSMenuDelegate  {
     @IBOutlet weak var tableView: NSTableView!
-
-    var detail = PreferencesDetailViewModel()
+    @IBOutlet weak var nameLabel: NSTextField!
+    @IBOutlet var outputTextView: NSTextView!
+    @IBOutlet weak var statusLabel: NSTextField!
+    @IBOutlet weak var controlsView: NSView!
+    @IBOutlet weak var addButton: NSButton!
+    @IBOutlet weak var removeButton: NSButton!
+    @IBOutlet weak var editButton: NSButton!
+    
+    var viewModel = PreferencesDetailViewModel()
     var presetTextColor = Value(NSColor.textColor())
     var bag = DisposeBag()
 
@@ -30,111 +28,36 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         super.windowDidLoad()
 
         tableView.setDelegate(self)
-        tableView.setDataSource(detail)
-
-        // Tab cycle order.
-        window?.initialFirstResponder = nameField
-        nameField.nextKeyView = dirField
-        dirField.nextKeyView = presetField
-        presetField.nextKeyView = globField
-        globField.nextKeyView = commandField
-        commandField.nextKeyView = patternField
-        patternField.nextKeyView = nameField
-
-        // Allow insertion of newlines
-        nameField.delegate = self
-        dirField.delegate = self
-        globField.delegate = self
-        commandField.delegate = self
-        patternField.delegate = self
-
-        updatePresets()
-
-        self.enabled = false
+        tableView.setDataSource(viewModel)
 
         window?.center()
 
-        // Update preset field color when this is set...
-        presetTextColor
-            .subscribeNext({color in
-                self.globField.textColor = color
-                self.commandField.textColor = color
-                self.patternField.textColor = color
-            })
-            .addDisposableTo(bag)
-
         model.watches.collectionChanged.subscribeNext(onWatchesChanged).addDisposableTo(bag)
 
-        detail.watch.name.bidirectionalBindTo(nameField).addDisposableTo(bag)
-        detail.watch.directory.bidirectionalBindTo(dirField).addDisposableTo(bag)
-        detail.watch.glob.bidirectionalBindTo(globField).addDisposableTo(bag)
-        detail.watch.command.bidirectionalBindTo(commandField).addDisposableTo(bag)
-        detail.watch.pattern.bidirectionalBindTo(patternField).addDisposableTo(bag)
-
-        detail.watch.name
-            .subscribeNext({_ in
-                self.tableView.reloadData()
+        viewModel.watch.name
+            .subscribeNext({name in
+                self.nameLabel.stringValue = name
             })
             .addDisposableTo(bag)
-
-        detail.watch.directory
-            .subscribeNext({text in
-                if self.detail.watch.validPath() {
-                    self.dirField.textColor = NSColor.textColor()
-                } else {
-                    self.dirField.textColor = NSColor.redColor()
-                }
-                self.tableView.reloadData()
-            })
-            .addDisposableTo(bag)
-
-        // Update preset drop-down when preset fields change.
-        detail.presetFields
-            .subscribeNext({(glob, command, pattern) in
-                if let preset = model.presetForWatch(self.detail.watch) {
-                    self.detail.setPreset(preset)
-                    self.presetField.selectItemWithTitle(preset.name.value)
-                    self.presetTextColor.value = NSColor.grayColor()
-                } else {
-                    self.detail.setPreset(nil)
-                    self.presetField.selectItemAtIndex(0)
-                    self.presetTextColor.value = NSColor.textColor()
-                }
-                if !Regex.valid(pattern) {
-                    self.patternField.textColor = NSColor.redColor()
-                }
-                self.tableView.reloadData()
-            })
-            .addDisposableTo(bag)
-
-        // Update model when preset changes.
-        presetField.rx_controlEvents
-            .map({self.presetField.indexOfSelectedItem})
-            .filter({i in i > 0})
-            .map({i in model.presets[i - 1]})
-            .subscribeNext({preset in
-                if self.detail.preset.value == nil && self.detail.watch.preset.value != "" {
-                    self.confirmPreset(preset)
-                } else {
-                    self.detail.preset.value = preset
+        viewModel.watch.output
+            .subscribeNext({output in
+                // Smart Scrolling
+                let scroll = NSMaxY(self.outputTextView.visibleRect) == NSMaxY(self.outputTextView.bounds)
+                self.outputTextView.string = output
+                if scroll {
+                    self.outputTextView.scrollRangeToVisible(NSMakeRange(self.outputTextView.string!.characters.count, 0))
                 }
             })
             .addDisposableTo(bag)
-    }
-
-    func updatePresets() {
-        let selected = presetField.indexOfSelectedItem
-        presetField.removeAllItems()
-        let titles = [""] + model.presets.map({p in p.name.value})
-        presetField.addItemsWithTitles(titles)
-        presetField.menu?.delegate = self
-        presetField.autoenablesItems = false
-        presetField.itemAtIndex(0)?.enabled = false
-        if selected < 0 || selected >= presetField.numberOfItems {
-            presetField.selectItemAtIndex(0)
-        } else {
-            presetField.selectItemAtIndex(selected)
-        }
+        viewModel.watch.running
+            .subscribeNext { running in
+                self.statusLabel.stringValue = running ? "Running" : "Idle"
+            }
+            .addDisposableTo(bag)
+        addButton.rx_tap.subscribeNext{ self.addWatch() }
+        removeButton.rx_tap.subscribeNext{ self.removeWatch() }
+        editButton.rx_tap.subscribeNext{ self.editWatch() }
+        tableView.selectRowIndexes(NSIndexSet(index: 0), byExtendingSelection: false)
     }
 
     func onWatchesChanged(event: ObservableCollectionEvent<Watch>) {
@@ -153,99 +76,62 @@ class PreferencesWindow: NSWindowController, NSTableViewDelegate, NSMenuDelegate
         self.close()
     }
 
-    @IBAction func onAdd(sender: AnyObject) {
-//        let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: self.window!.frame.size.width + 100, height: 500), styleMask: NSClosableWindowMask, backing: NSBackingStoreType.Buffered, `defer`: true)
-//        let panelView = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 400))
-//        panel.contentView = panelView
-        
-//        let panel = WatcherSettingsWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 400), styleMask: NSClosableWindowMask, backing: .Buffered, `defer`: true)
-        
-//        let panel = WatcherSettingsController()
-        let panel = WatcherSettingsController(windowNibName: "WatcherSettings")
-        self.window?.beginSheet(panel.window!) { response in
-            if response == NSModalResponseOK {
-            }
-            panel.close()
-        }
-        //detail.addWatch()
+    private func addWatch() {
+        showWatchSettings()
     }
 
-    @IBAction func onRemove(sender: AnyObject) {
+    private func removeWatch() {
         for (offset, row) in tableView.selectedRowIndexes.enumerate() {
-            detail.removeWatch(row - offset)
+            model.watches.removeAtIndex(row - offset)
+        }
+        
+        tableView.selectRowIndexes(NSIndexSet(index: model.watches.count - 1), byExtendingSelection: false)
+    }
+    
+    private func editWatch() {
+        for (offset, row) in tableView.selectedRowIndexes.enumerate() {
+            let watch = model.watches[(row - offset)]
+            showWatchSettings(watch)
+            break
         }
     }
-
-    @IBAction func onDirDialog(sender: AnyObject) {
-        let openPanel = NSOpenPanel()
-        openPanel.canChooseDirectories = true
-        openPanel.canChooseFiles = false
-        openPanel.canCreateDirectories = true
-        openPanel.directoryURL = NSURL(fileURLWithPath: self.dirField.stringValue.stringByExpandingTildeInPath)
-        openPanel.title = "Directory to watch"
-        openPanel.resolvesAliases = false
-        openPanel.beginSheetModalForWindow(self.window!, completionHandler: {v in
-            if v == NSModalResponseOK, let path: String = openPanel.URL?.path {
-                self.detail.watch.directory.value = path.stringByReplacingHomeWithTilde
+    
+    private func showWatchSettings(watch:Watch? = nil) {
+        let settings = WatcherSettingsController(windowNibName: "WatcherSettings")
+        if watch != nil {
+            settings.watch = watch
+        }
+        self.window?.beginSheet(settings.window!) { response in
+            if response == NSModalResponseOK {
+                if settings.newWatch {
+                    model.watches.append(settings.watch)
+                } else {
+                    
+                }
             }
-        })
-    }
-
-    var enabled: Bool {
-        get { return controlGroup.enabledSubViews }
-        set(enable) {
-            controlGroup.enabledSubViews = enable
-            presetField.enabled = !detail.hasPresets() ? false : enable
+            settings.close()
         }
     }
+}
 
+extension PreferencesWindow : NSTableViewDelegate {
     func tableViewSelectionDidChange(notification: NSNotification) {
         let tableView = notification.object as! NSTableView
         let index = tableView.selectedRow
         if index != -1 {
-            detail.bind(index)
+            viewModel.bind(index)
+            controlsView.hidden = false
+            editButton.enabled = true
         } else {
-            detail.unbind()
-        }
-        self.enabled = index != -1
-        if self.enabled {
-            nameField.becomeFirstResponder()
+            viewModel.unbind()
+            controlsView.hidden = true
+            editButton.enabled = false
         }
     }
-
-    func confirmPreset(preset: Preset) {
-        let alert = NSAlert()
-        alert.addButtonWithTitle("Cancel")
-        alert.addButtonWithTitle("Ok")
-        alert.messageText = "Replace existing configuration with preset?"
-        alert.informativeText = "This will replace your existing glob, command and pattern."
-        alert.alertStyle = .WarningAlertStyle
-        alert.beginSheetModalForWindow(window!, completionHandler: {response in
-            if response == NSAlertSecondButtonReturn {
-                self.detail.preset.value = preset
-            } else {
-                self.detail.preset.value = nil
-                self.presetField.selectItemAtIndex(0)
-            }
-        })
-    }
-
+    
     func tableView(tableView: NSTableView, willDisplayCell cell: AnyObject, forTableColumn tableColumn: NSTableColumn?, row: Int) {
         let tcell = cell as! NSTextFieldCell
         let watch = model.watches[row]
         tcell.textColor = watch.valid.value ? NSColor.textColor() : NSColor.redColor()
-    }
-
-    // Override enter key so it actually inserts a newline...
-    func control(control: NSControl, textView: NSTextView, doCommandBySelector commandSelector: Selector) -> Bool {
-        var result = false
-        if commandSelector == Selector("insertNewline:") {
-            textView.insertNewlineIgnoringFieldEditor(self)
-            result = true
-//        } else if commandSelector == Selector("insertTab:") {
-//            textView.insertTabIgnoringFieldEditor(self)
-//            result = true
-        }
-        return result
     }
 }

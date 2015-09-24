@@ -20,6 +20,8 @@ public class Watch: ObservableStructure, CustomStringConvertible {
     public let command = Value<String>("")
     public let pattern = Value<String>("")
     public let valid = Value<Bool>(false)
+    public let running = Value<Bool>(false)
+    public let output = Value<String>("")
 
     private let propertyChangedPublisher = PublishSubject<String>()
     public let propertyChanged: Observable<String>
