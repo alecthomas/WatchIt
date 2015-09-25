@@ -2,3 +2,4 @@ github "alecthomas/FileSystemEvents" "master"
 github "DaveWoodCom/XCGLogger" "swift_2.0"
 github "SwiftyJSON/SwiftyJSON" "xcode7"
 github "ReactiveX/RxSwift" "develop"
+github "SnapKit/SnapKit" >= 0.15.0

@@ -53,6 +53,7 @@ public class PreferencesDetailViewModel: NSObject, NSTableViewDataSource {
         bidirectionalBindTo(watch.glob, self.watch.glob).addDisposableTo(bag)
         bidirectionalBindTo(watch.command, self.watch.command).addDisposableTo(bag)
         bidirectionalBindTo(watch.pattern, self.watch.pattern).addDisposableTo(bag)
+        bidirectionalBindTo(watch.output, self.watch.output).addDisposableTo(bag)
     }
 
     public func unbind() {

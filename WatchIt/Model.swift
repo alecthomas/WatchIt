@@ -19,6 +19,9 @@ public class Watch: ObservableStructure, CustomStringConvertible {
     public let glob = Value<String>("")
     public let command = Value<String>("")
     public let pattern = Value<String>("")
+    public let valid = Value<Bool>(false)
+    public let running = Value<Bool>(false)
+    public let output = Value<String>("")
 
     private let propertyChangedPublisher = PublishSubject<String>()
     public let propertyChanged: Observable<String>
@@ -40,6 +43,13 @@ public class Watch: ObservableStructure, CustomStringConvertible {
         glob.map({_ in "glob"}).subscribe(propertyChangedPublisher)
         command.map({_ in "command"}).subscribe(propertyChangedPublisher)
         pattern.map({_ in "pattern"}).subscribe(propertyChangedPublisher)
+        id.subscribeNext{text in self.updateValid()}
+        name.subscribeNext{text in self.updateValid()}
+        directory.subscribeNext{text in self.updateValid()}
+        preset.subscribeNext{text in self.updateValid()}
+        glob.subscribeNext{text in self.updateValid()}
+        command.subscribeNext{text in self.updateValid()}
+        pattern.subscribeNext{text in self.updateValid()}
     }
 
     public convenience init(json: JSON, presets: [String:Preset]) throws {
@@ -58,10 +68,6 @@ public class Watch: ObservableStructure, CustomStringConvertible {
     public func validPath() -> Bool {
         var isDir: ObjCBool = false
         return NSFileManager.defaultManager().fileExistsAtPath(realPath, isDirectory: &isDir) && isDir
-    }
-
-    public func valid() -> Bool {
-        return validPath() && glob.value != "" && command.value != "" && Regex.valid(pattern.value)
     }
 
     public func setPreset(preset: Preset?) {
@@ -95,6 +101,10 @@ public class Watch: ObservableStructure, CustomStringConvertible {
         command.value = ""
         pattern.value = ""
         preset.value = ""
+    }
+    
+    private func updateValid() {
+        valid.value = name.value != "" && validPath() && glob.value != "" && command.value != "" && Regex.valid(pattern.value)
     }
 }
 

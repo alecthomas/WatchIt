@@ -92,6 +92,7 @@ public class Runner {
 
     private func start(watch: Watch) {
         log.info("Starting watch: \(watch)")
+        watch.output.value = "\(watch.output.value) \(watch.description)\n"
         lock.performLocked {
             if let task = running[watch.name.value] {
                 log.info("Terminating existing watch task: \(task)")
@@ -114,7 +115,10 @@ public class Runner {
 
 
         log.info("Launching watch task: \(watch)")
+        watch.watch.output.value = "\(watch.watch.output.value) \(watch.description)\n"
+        watch.watch.running.value = true
         watch.run()
+        watch.watch.running.value = false
         for error in watch.errors {
             failurePublisher.on(.Next(error))
         }
